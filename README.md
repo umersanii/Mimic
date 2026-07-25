@@ -2,38 +2,44 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-**Mimic** — a webcam-controlled, tendon-driven robotic hand. MediaPipe hand tracking on a PC reads
+**Mimic** is a webcam-controlled, tendon-driven robotic hand. MediaPipe hand tracking on a PC reads
 finger flexion in real time; today that drives a simulated hand in Gazebo, and will drive real
 servos on a 3D-printed hand over serial once the physical build exists.
-(Inspired by pathofseb's build.)
 
-Open source, hobbyist-built, and documented as a learning project — see
-[Documentation](#documentation) below for the full technical + conceptual writeup.
+Open source, hobbyist-built, and documented as a learning project. See
+[Documentation](#documentation) below for the full technical and conceptual writeup.
 
 **Simulation-based for now.** This repo currently covers the vision pipeline and the Gazebo
-simulation only. Firmware and hardware are designed and planned but intentionally not part of this
-repo yet — they'll be added once the physical hand is actually built and wired up. See
+simulation only. Firmware and hardware are designed and planned, but they're intentionally not
+part of this repo yet: they'll be added once the physical hand is actually built and wired up. See
 [Planned: hardware & firmware](#planned-hardware--firmware) below.
+
+## See it in action
+
+![Mimic tracking a hand via webcam: skeleton overlay, per-finger gauges, live FPS](https://raw.githubusercontent.com/umersanii/Mimic-Docs/main/docs/assets/img/hero-tracking.png)
+
+More screenshots and demo clips (including the same tracked hand driving the Gazebo simulation
+live) are on the [docs site](https://umersanii.github.io/Mimic-Docs/).
 
 ## Layout
 
-- `vision/` — Python: webcam capture, MediaPipe hand landmarks, per-finger flexion angle
+- `vision/`: Python, webcam capture, MediaPipe hand landmarks, per-finger flexion angle
   calculation, serial output (once hardware exists) and Gazebo bridge output. Entry point:
   `vision/hand_tracker.py`.
-- `sim/` — Gazebo simulation (world, InMoov-derived hand model, vision→sim bridge). See the docs
+- `sim/`: Gazebo simulation (world, InMoov-derived hand model, vision to sim bridge). See the docs
   site for the full writeup of how it works.
-- `isaac-sim-setup.md` — unrelated: Isaac Sim 5.0.0 headless Docker setup notes for this machine.
+- `isaac-sim-setup.md`: unrelated. Isaac Sim 5.0.0 headless Docker setup notes for this machine.
 
 ## Status
 
 Vision pipeline and simulation are working (live-tested against the webcam; sim verified with the
-same tracked hand data). Physical hardware is not built — this repo will grow a `firmware/` and
+same tracked hand data). Physical hardware is not built. This repo will grow a `firmware/` and
 `hardware/` directory once it is.
 
 ## Quick start (software side, no hardware needed yet)
 
-Uses a dedicated conda env (`robohand`, Python 3.11) — `mediapipe` doesn't ship for 3.13, which
-is what's installed at the system level.
+Uses a dedicated conda env (`robohand`, Python 3.11), since `mediapipe` doesn't ship for 3.13,
+which is what's installed at the system level.
 
 ```fish
 conda create -y -n robohand python=3.11
@@ -43,8 +49,8 @@ pip install -r requirements.txt
 python3 hand_tracker.py --no-serial
 ```
 
-This opens a webcam window with hand-skeleton overlay, finger count, and FPS — the same
-debug view as the reference video — without needing the Arduino/servos connected.
+This opens a webcam window with hand-skeleton overlay, finger count, and FPS (see
+[above](#see-it-in-action)), without needing the Arduino/servos connected.
 
 ### Model file
 
@@ -71,21 +77,21 @@ python3 hand_tracker.py --no-serial --gazebo
 The physical build isn't started yet, but it's fully planned: a tendon-driven hand (1 servo per
 finger, tendons routed through printed channels, elastic return), an Arduino reading finger angles
 over serial and driving the servos, and a bill of materials with the open decisions already
-identified (which hand STL to print, servo power supply sizing). That plan — the BOM, wiring
-notes, and firmware design — is written up in full on the [docs site](https://github.com/umersanii/Mimic-Docs),
+identified (which hand STL to print, servo power supply sizing). That plan (the BOM, wiring
+notes, and firmware design) is written up in full on the [docs site](https://github.com/umersanii/Mimic-Docs),
 which is where it'll stay linked from once `firmware/` and `hardware/` land in this repo.
 
 ## Documentation
 
-This README covers quick-start commands. The full reference documentation — architecture,
+This README covers quick-start commands. The full reference documentation (architecture,
 how the vision-to-servo pipeline works, the simulation setup, and build/wiring notes, written
-for both newcomers and anyone who wants the technical detail — lives in a separate docs repo:
+for both newcomers and anyone who wants the technical detail) lives in a separate docs repo:
 
 **[umersanii/Mimic-Docs](https://github.com/umersanii/Mimic-Docs)** (deploys to GitHub Pages)
 
 ## Contributing
 
-Contributions and forks are welcome — see [CONTRIBUTING.md](CONTRIBUTING.md).
+Contributions and forks are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## License
 
