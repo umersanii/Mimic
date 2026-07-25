@@ -1,0 +1,209 @@
+<?xml version="1.0" ?>
+<sdf version="1.9">
+
+  <!-- This <world> tag is what creates the World entity you saw as "default"
+       in the Entity Tree (Entity 1). Its attributes/children become the
+       Gravity, Physics, Physics Solver, etc. components on that entity. -->
+  <world name="default">
+
+    <!-- Declares which physics System to load, and its config -->
+    <physics name="1ms" type="dartsim">
+      <max_step_size>0.001</max_step_size>
+      <real_time_factor>1.0</real_time_factor>
+    </physics>
+
+    <!-- Each <plugin> line is a System being attached to the World entity.
+         Without these, physics wouldn't run and you couldn't interact
+         with the sim from the GUI -- this is the same "System Plugin Info"
+         component you saw in the inspector. -->
+    <plugin filename="gz-sim-physics-system" name="gz::sim::systems::Physics"/>
+    <plugin filename="gz-sim-sensors-system" name="gz::sim::systems::Sensors"/>
+    <plugin filename="gz-sim-scene-broadcaster-system" name="gz::sim::systems::SceneBroadcaster"/>
+    <plugin filename="gz-sim-user-commands-system" name="gz::sim::systems::UserCommands"/>
+
+    <!-- MINIMAL DIAGNOSTIC: single link, hinged directly to world, starting
+         horizontal (i.e. NOT at rest) so it's obvious within 1 second
+         whether gravity+the revolute joint are working at all. -->
+    <model name="pendulum_test">
+      <link name="arm">
+        <pose>2 0 5 0 1.5708 0</pose>
+        <inertial>
+          <mass>1.0</mass>
+          <inertia>
+            <ixx>1.33</ixx><iyy>1.33</iyy><izz>0.0067</izz>
+            <ixy>0</ixy><ixz>0</ixz><iyz>0</iyz>
+          </inertia>
+        </inertial>
+        <collision name="collision">
+          <geometry><box><size>0.2 0.2 4</size></box></geometry>
+        </collision>
+        <visual name="visual">
+          <geometry><box><size>0.2 0.2 4</size></box></geometry>
+          <material>
+            <ambient>0.2 0.5 0.9 1</ambient>
+            <diffuse>0.2 0.5 0.9 1</diffuse>
+          </material>
+        </visual>
+      </link>
+      <joint name="pin" type="revolute">
+        <parent>world</parent>
+        <child>arm</child>
+        <pose>0 0 -2 0 0 0</pose>
+        <axis>
+          <xyz>0 1 0</xyz>
+          <limit>
+            <lower>-3.14</lower>
+            <upper>3.14</upper>
+          </limit>
+        </axis>
+      </joint>
+
+      <!-- Attaches a System to this specific joint that subscribes to a
+           Gazebo Transport topic carrying a target angle (radians) and
+           runs an internal PID loop each tick to drive "pin" toward it,
+           fighting gravity if needed -- same job a real servo's control
+           loop does. -->
+      <plugin filename="gz-sim-joint-position-controller-system"
+              name="gz::sim::systems::JointPositionController">
+        <joint_name>pin</joint_name>
+        <topic>/pendulum_test/cmd_pos</topic>
+        <p_gain>50</p_gain>
+        <i_gain>0.1</i_gain>
+        <d_gain>1</d_gain>
+        <i_max>1</i_max>
+        <i_min>-1</i_min>
+        <cmd_max>50</cmd_max>
+        <cmd_min>-50</cmd_min>
+      </plugin>
+    </model>
+
+    <!-- A Light entity, same as "sun" in the tree -->
+    <light type="directional" name="sun">
+      <cast_shadows>true</cast_shadows>
+      <pose>0 0 10 0 0 0</pose>
+      <direction>-0.5 0.1 -0.9</direction>
+    </light>
+
+    <!-- A Model entity, same as "ground_plane" -->
+    <model name="ground_plane">
+      <static>true</static>
+      <link name="link">
+        <collision name="collision">
+          <geometry><plane><normal>0 0 1</normal></plane></geometry>
+        </collision>
+        <visual name="visual">
+          <geometry><plane><normal>0 0 1</normal><size>100 100</size></plane></geometry>
+          <material>
+            <ambient>0.8 0.8 0.8 1</ambient>
+            <diffuse>0.8 0.8 0.8 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- A Model entity, same as "ground_plane" -->
+    <model name="joint_uno">
+
+      <!-- link1: the "post" -- stays fixed via being the joint's parent
+           with nothing else acting on it (still dynamic, but nothing
+           will move it since only link2 is hinged to it). -->
+      <link name="link1">
+      <pose>10 0 0 0 0 0</pose>
+        <collision name="collision">
+          <geometry><cylinder><radius>1</radius><length>10</length></cylinder></geometry>
+        </collision>
+        <inertial>
+          <mass>1.0</mass>
+          <inertia>
+            <ixx>8.5833</ixx><iyy>8.5833</iyy><izz>0.5</izz>
+            <ixy>0</ixy><ixz>0</ixz><iyz>0</iyz>
+          </inertia>
+        </inertial>
+        <visual name="visual">
+          <geometry><cylinder><radius>1</radius><length>10</length></cylinder></geometry>
+          <material>
+            <ambient>0.8 0.8 0.8 1</ambient>
+            <diffuse>0.8 0.8 0.8 1</diffuse>
+          </material>
+        </visual>
+      </link>
+
+    <!-- link2: the "gate" -- hinges around link1 like a swinging door -->
+    <link name="link2">
+      <pose>14 0 0 0 0 0</pose>
+        <collision name="collision">
+          <geometry><cylinder><radius>1</radius><length>10</length></cylinder></geometry>
+        </collision>
+        <inertial>
+          <mass>1.0</mass>
+          <inertia>
+            <ixx>8.5833</ixx><iyy>8.5833</iyy><izz>0.5</izz>
+            <ixy>0</ixy><ixz>0</ixz><iyz>0</iyz>
+          </inertia>
+        </inertial>
+        <visual name="visual">
+          <geometry><cylinder><radius>1</radius><length>10</length></cylinder></geometry>
+          <material>
+            <ambient>0.8 0.8 0.8 1</ambient>
+            <diffuse>0.8 0.8 0.8 1</diffuse>
+          </material>
+        </visual>
+      </link>
+
+  <!-- Anchors link1 to the immovable world frame. Without this, being a
+       joint's "parent" does NOT mean fixed -- link1 has mass and no
+       connection to anything immovable, so gravity would pull the whole
+       link1+link2 assembly down together, hinge and all. -->
+  <joint name="anchor" type="fixed">
+    <parent>world</parent>
+    <child>link1</child>
+  </joint>
+
+  <!-- Joint pose is expressed relative to the CHILD link's origin (link2,
+       at x=14). We want the hinge point to sit at link1's position
+       (x=10), so the offset here is 10-14 = -4 along X. -->
+  <joint name="jointer" type="revolute">
+    <parent>link1</parent>
+    <child>link2</child>
+    <pose>-4 0 0 0 0 0</pose>
+    <axis>
+      <xyz>0 1 0</xyz>
+      <limit>
+        <lower>-1.57</lower>
+        <upper>1.57</upper>
+      </limit>
+    </axis>
+  </joint>
+    </model>
+
+    <!-- Model entity "box", matching what you inspected earlier:
+         Model (Pose, Static, Parent Entity=World)
+           -> Link (Inertial, Parent Entity=box)
+                -> Visual (Geometry, Material)
+                -> Collision (Geometry) -->
+    <model name="box">
+      <pose>0 0 1 0 0 0</pose>
+      <static>false</static>
+      <link name="box_link">
+        <inertial>
+          <mass>1.0</mass>
+          <inertia>
+            <ixx>0.1667</ixx><iyy>0.1667</iyy><izz>0.1667</izz>
+            <ixy>0</ixy><ixz>0</ixz><iyz>0</iyz>
+          </inertia>
+        </inertial>
+        <collision name="collision">
+          <geometry><box><size>0.5 0.5 0.5</size></box></geometry>
+        </collision>
+        <visual name="visual">
+          <geometry><box><size>0.5 0.5 0.5</size></box></geometry>
+          <material>
+            <ambient>0.8 0.2 0.2 1</ambient>
+            <diffuse>0.8 0.2 0.2 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+  </world>
+</sdf>

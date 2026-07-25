@@ -1,0 +1,548 @@
+<?xml version='1.0' encoding='utf-8'?>
+<robot name="inmoov_left_hand">
+  <link name="base_link" />
+  <link name="i01.leftHand.index2_link">
+    <visual name="i01.leftHand.indexPhal2">
+      <origin rpy="1.98409 -0.61920 0.09256" xyz="-0.501271 0.525474 0.239178" />
+      <material name="Material.614" />
+      <geometry>
+        <mesh filename="meshes/Texture.019.stl" scale="0.10000 0.10000 0.10000" />
+      </geometry>
+    </visual>
+    <collision name="i01.leftHand.indexPhal2_collision">
+      <origin xyz="-0.000885 0.011586 0.001736" rpy="1.984090 -0.619200 0.092560" />
+      <geometry>
+        <box size="0.015443 0.025802 0.032894" />
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="-0.000885 0.011586 0.001736" rpy="1.984090 -0.619200 0.092560" />
+      <mass value="0.00800" />
+      <inertia ixx="0.000001165" ixy="0" ixz="0" iyy="0.000000880" iyz="0" izz="0.000000603" />
+    </inertial>
+  </link>
+  <link name="i01.leftHand.index3_link">
+    <visual name="i01.leftHand.indexPhal3">
+      <origin rpy="1.98408 -0.61920 0.09256" xyz="-0.501374 0.502777 0.238745" />
+      <material name="Material.618" />
+      <geometry>
+        <mesh filename="meshes/Texture.020.stl" scale="0.10000 0.10000 0.10000" />
+      </geometry>
+    </visual>
+    <collision name="i01.leftHand.indexPhal3_collision">
+      <origin xyz="-0.000977 0.011587 0.000553" rpy="1.984080 -0.619200 0.092560" />
+      <geometry>
+        <box size="0.014221 0.023494 0.030935" />
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="-0.000977 0.011587 0.000553" rpy="1.984080 -0.619200 0.092560" />
+      <mass value="0.00500" />
+      <inertia ixx="0.000000629" ixy="0" ixz="0" iyy="0.000000483" iyz="0" izz="0.000000314" />
+    </inertial>
+  </link>
+  <link name="i01.leftHand.index_link">
+    <visual name="i01.leftHand.indexPhal1">
+      <origin rpy="1.98409 -0.61920 0.09256" xyz="-0.501013 0.559578 0.239863" />
+      <material name="Material.610" />
+      <geometry>
+        <mesh filename="meshes/Texture.018.stl" scale="0.10000 0.10000 0.10000" />
+      </geometry>
+    </visual>
+    <collision name="i01.leftHand.indexPhal1_collision">
+      <origin xyz="-0.000834 0.017103 0.001469" rpy="1.984090 -0.619200 0.092560" />
+      <geometry>
+        <box size="0.019096 0.031926 0.046653" />
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="-0.000834 0.017103 0.001469" rpy="1.984090 -0.619200 0.092560" />
+      <mass value="0.01200" />
+      <inertia ixx="0.000003196" ixy="0" ixz="0" iyy="0.000002541" iyz="0" izz="0.000001384" />
+    </inertial>
+  </link>
+  <link name="i01.leftHand.majeure2_link">
+    <visual name="i01.leftHand.majeurePhal2">
+      <origin rpy="1.98409 -0.61920 -0.00000" xyz="-0.421941 0.563616 0.239254" />
+      <material name="Material.613" />
+      <geometry>
+        <mesh filename="meshes/Texture.023.stl" scale="0.10000 0.10000 0.10000" />
+      </geometry>
+    </visual>
+    <collision name="i01.leftHand.majeurePhal2_collision">
+      <origin xyz="-0.000987 0.012290 0.001647" rpy="1.984090 -0.619200 -0.000000" />
+      <geometry>
+        <box size="0.015220 0.026112 0.034757" />
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="-0.000987 0.012290 0.001647" rpy="1.984090 -0.619200 -0.000000" />
+      <mass value="0.00800" />
+      <inertia ixx="0.000001260" ixy="0" ixz="0" iyy="0.000000960" iyz="0" izz="0.000000609" />
+    </inertial>
+  </link>
+  <link name="i01.leftHand.majeure3_link">
+    <visual name="i01.leftHand.majeurePhal3">
+      <origin rpy="1.98409 -0.61920 0.00000" xyz="-0.422050 0.539700 0.238798" />
+      <material name="Material.617" />
+      <geometry>
+        <mesh filename="meshes/Texture.024.stl" scale="0.10000 0.10000 0.10000" />
+      </geometry>
+    </visual>
+    <collision name="i01.leftHand.majeurePhal3_collision">
+      <origin xyz="-0.000953 0.012357 0.000635" rpy="1.984090 -0.619200 0.000000" />
+      <geometry>
+        <box size="0.014270 0.023619 0.033005" />
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="-0.000953 0.012357 0.000635" rpy="1.984090 -0.619200 0.000000" />
+      <mass value="0.00500" />
+      <inertia ixx="0.000000686" ixy="0" ixz="0" iyy="0.000000539" iyz="0" izz="0.000000317" />
+    </inertial>
+  </link>
+  <link name="i01.leftHand.majeure_link">
+    <visual name="i01.leftHand.majeurePhal1">
+      <origin rpy="1.98409 -0.61920 -0.00000" xyz="-0.421669 0.599551 0.239975" />
+      <material name="Material.609" />
+      <geometry>
+        <mesh filename="meshes/Texture.022.stl" scale="0.10000 0.10000 0.10000" />
+      </geometry>
+    </visual>
+    <collision name="i01.leftHand.majeurePhal1_collision">
+      <origin xyz="-0.000943 0.018219 0.001438" rpy="1.984090 -0.619200 -0.000000" />
+      <geometry>
+        <box size="0.017182 0.031979 0.049253" />
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="-0.000943 0.018219 0.001438" rpy="1.984090 -0.619200 -0.000000" />
+      <mass value="0.01200" />
+      <inertia ixx="0.000003449" ixy="0" ixz="0" iyy="0.000002721" iyz="0" izz="0.000001318" />
+    </inertial>
+  </link>
+  <link name="i01.leftHand.pinky0_link">
+    <visual name="i01.leftHand.WristSmall2">
+      <origin rpy="1.98409 -0.61920 0.68804" xyz="-0.722704 0.264375 0.238651" />
+      <material name="Material.601" />
+      <geometry>
+        <mesh filename="meshes/Texture.041.stl" scale="0.10000 0.10000 0.10000" />
+      </geometry>
+    </visual>
+    <collision name="i01.leftHand.WristSmall2_collision">
+      <origin xyz="-0.017295 0.006300 0.004145" rpy="1.984090 -0.619200 0.688040" />
+      <geometry>
+        <box size="0.039387 0.032899 0.065856" />
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="-0.017295 0.006300 0.004145" rpy="1.984090 -0.619200 0.688040" />
+      <mass value="0.00600" />
+      <inertia ixx="0.000002710" ixy="0" ixz="0" iyy="0.000002944" iyz="0" izz="0.000001317" />
+    </inertial>
+  </link>
+  <link name="i01.leftHand.pinky2_link">
+    <visual name="i01.leftHand.pinkyPhal2">
+      <origin rpy="1.98409 -0.61921 -0.25722" xyz="-0.200407 0.663864 0.237327" />
+      <material name="Material.611" />
+      <geometry>
+        <mesh filename="meshes/Texture.028.stl" scale="0.10000 0.10000 0.10000" />
+      </geometry>
+    </visual>
+    <collision name="i01.leftHand.pinkyPhal2_collision">
+      <origin xyz="-0.000451 0.010299 0.001296" rpy="1.984090 -0.619210 -0.257220" />
+      <geometry>
+        <box size="0.017252 0.018503 0.027951" />
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="-0.000451 0.010299 0.001296" rpy="1.984090 -0.619210 -0.257220" />
+      <mass value="0.00800" />
+      <inertia ixx="0.000000749" ixy="0" ixz="0" iyy="0.000000719" iyz="0" izz="0.000000427" />
+    </inertial>
+  </link>
+  <link name="i01.leftHand.pinky3_link">
+    <visual name="i01.leftHand.pinkyPhal3">
+      <origin rpy="1.98409 -0.61920 -0.25722" xyz="-0.200497 0.644033 0.236951" />
+      <material name="Material.615" />
+      <geometry>
+        <mesh filename="meshes/Texture.029.stl" scale="0.10000 0.10000 0.10000" />
+      </geometry>
+    </visual>
+    <collision name="i01.leftHand.pinkyPhal3_collision">
+      <origin xyz="-0.000240 0.010493 0.000825" rpy="1.984090 -0.619200 -0.257220" />
+      <geometry>
+        <box size="0.015006 0.016526 0.027323" />
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="-0.000240 0.010493 0.000825" rpy="1.984090 -0.619200 -0.257220" />
+      <mass value="0.00500" />
+      <inertia ixx="0.000000425" ixy="0" ixz="0" iyy="0.000000405" iyz="0" izz="0.000000208" />
+    </inertial>
+  </link>
+  <link name="i01.leftHand.pinky_link">
+    <visual name="i01.leftHand.pinkyPhal1">
+      <origin rpy="1.98409 -0.61920 -0.25722" xyz="-0.200181 0.693659 0.237926" />
+      <material name="Material.607" />
+      <geometry>
+        <mesh filename="meshes/Texture.027.stl" scale="0.10000 0.10000 0.10000" />
+      </geometry>
+    </visual>
+    <collision name="i01.leftHand.pinkyPhal1_collision">
+      <origin xyz="-0.000141 0.015448 0.001321" rpy="1.984090 -0.619200 -0.257220" />
+      <geometry>
+        <box size="0.020776 0.021950 0.039489" />
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="-0.000141 0.015448 0.001321" rpy="1.984090 -0.619200 -0.257220" />
+      <mass value="0.01200" />
+      <inertia ixx="0.000002041" ixy="0" ixz="0" iyy="0.000001991" iyz="0" izz="0.000000913" />
+    </inertial>
+  </link>
+  <link name="i01.leftHand.ringFinger_link">
+    <visual name="i01.leftHand.ringFingerPhal1">
+      <origin rpy="1.98409 -0.61920 -0.08681" xyz="-0.338539 0.639614 0.239315" />
+      <material name="Material.608" />
+      <geometry>
+        <mesh filename="meshes/Texture.032.stl" scale="0.10000 0.10000 0.10000" />
+      </geometry>
+    </visual>
+    <collision name="i01.leftHand.ringFingerPhal1_collision">
+      <origin xyz="-0.000582 0.017460 0.001476" rpy="1.984090 -0.619200 -0.086810" />
+      <geometry>
+        <box size="0.018304 0.028745 0.046484" />
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="-0.000582 0.017460 0.001476" rpy="1.984090 -0.619200 -0.086810" />
+      <mass value="0.01200" />
+      <inertia ixx="0.000002987" ixy="0" ixz="0" iyy="0.000002496" iyz="0" izz="0.000001161" />
+    </inertial>
+  </link>
+  <link name="i01.leftHand.ringfinger0_link">
+    <visual name="i01.leftHand.WristSmall">
+      <origin rpy="1.98409 -0.61920 0.68804" xyz="-0.722704 0.235455 0.238651" />
+      <material name="Material.606" />
+      <geometry>
+        <mesh filename="meshes/Texture.040.stl" scale="0.10000 0.10000 0.10000" />
+      </geometry>
+    </visual>
+    <collision name="i01.leftHand.WristSmall_collision">
+      <origin xyz="-0.013105 0.005388 0.002223" rpy="1.984090 -0.619200 0.688040" />
+      <geometry>
+        <box size="0.038840 0.032813 0.055440" />
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="-0.013105 0.005388 0.002223" rpy="1.984090 -0.619200 0.688040" />
+      <mass value="0.00600" />
+      <inertia ixx="0.000002075" ixy="0" ixz="0" iyy="0.000002291" iyz="0" izz="0.000001293" />
+    </inertial>
+  </link>
+  <link name="i01.leftHand.ringfinger2_link">
+    <visual name="i01.leftHand.ringFingerPhal2">
+      <origin rpy="1.98409 -0.61920 -0.08682" xyz="-0.338797 0.605509 0.238632" />
+      <material name="Material.612" />
+      <geometry>
+        <mesh filename="meshes/Texture.033.stl" scale="0.10000 0.10000 0.10000" />
+      </geometry>
+    </visual>
+    <collision name="i01.leftHand.ringFingerPhal2_collision">
+      <origin xyz="-0.000721 0.011719 0.001589" rpy="1.984090 -0.619200 -0.086820" />
+      <geometry>
+        <box size="0.016056 0.023687 0.032833" />
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="-0.000721 0.011719 0.001589" rpy="1.984090 -0.619200 -0.086820" />
+      <mass value="0.00800" />
+      <inertia ixx="0.000001093" ixy="0" ixz="0" iyy="0.000000891" iyz="0" izz="0.000000546" />
+    </inertial>
+  </link>
+  <link name="i01.leftHand.ringfinger3_link">
+    <visual name="i01.leftHand.ringFingerPhal3">
+      <origin rpy="1.98409 -0.61920 -0.08682" xyz="-0.338900 0.582812 0.238200" />
+      <material name="Material.616" />
+      <geometry>
+        <mesh filename="meshes/Texture.034.stl" scale="0.10000 0.10000 0.10000" />
+      </geometry>
+    </visual>
+    <collision name="i01.leftHand.ringFingerPhal3_collision">
+      <origin xyz="-0.000650 0.011825 0.000777" rpy="1.984090 -0.619200 -0.086820" />
+      <geometry>
+        <box size="0.014171 0.021292 0.031451" />
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="-0.000650 0.011825 0.000777" rpy="1.984090 -0.619200 -0.086820" />
+      <mass value="0.00500" />
+      <inertia ixx="0.000000601" ixy="0" ixz="0" iyy="0.000000496" iyz="0" izz="0.000000273" />
+    </inertial>
+  </link>
+  <link name="i01.leftHand.thumb1_link">
+    <visual name="i01.leftHand.ThumbBase">
+      <origin rpy="-1.08797 0.62375 -0.06004" xyz="-0.506759 -0.598847 -0.272986" />
+      <material name="Material.603" />
+      <geometry>
+        <mesh filename="meshes/Texture.035.stl" scale="0.10000 0.10000 0.10000" />
+      </geometry>
+    </visual>
+    <collision name="i01.leftHand.ThumbBase_collision">
+      <origin xyz="0.012134 -0.002508 -0.003473" rpy="-1.087970 0.623750 -0.060040" />
+      <geometry>
+        <box size="0.039801 0.038365 0.033597" />
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="0.012134 -0.002508 -0.003473" rpy="-1.087970 0.623750 -0.060040" />
+      <mass value="0.01200" />
+      <inertia ixx="0.000002601" ixy="0" ixz="0" iyy="0.000002713" iyz="0" izz="0.000003056" />
+    </inertial>
+  </link>
+  <link name="i01.leftHand.thumb3_link">
+    <visual name="i01.leftHand.ThumbTip">
+      <origin rpy="-1.43269 0.82776 -1.11671" xyz="-0.838306 0.031675 -0.003957" />
+      <material name="Material.605" />
+      <geometry>
+        <mesh filename="meshes/Texture.038.stl" scale="0.10000 0.10000 0.10000" />
+      </geometry>
+    </visual>
+    <collision name="i01.leftHand.ThumbTip_collision">
+      <origin xyz="-0.001973 -0.011151 -0.001137" rpy="-1.432690 0.827760 -1.116710" />
+      <geometry>
+        <box size="0.029221 0.035716 0.023135" />
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="-0.001973 -0.011151 -0.001137" rpy="-1.432690 0.827760 -1.116710" />
+      <mass value="0.00500" />
+      <inertia ixx="0.000000755" ixy="0" ixz="0" iyy="0.000000579" iyz="0" izz="0.000000887" />
+    </inertial>
+  </link>
+  <link name="i01.leftHand.thumb_link">
+    <visual name="i01.leftHand.ThumbMid">
+      <origin rpy="-1.43268 0.82776 -1.11670" xyz="-0.837077 -0.001374 -0.004665" />
+      <material name="Material.604" />
+      <geometry>
+        <mesh filename="meshes/Texture.037.stl" scale="0.10000 0.10000 0.10000" />
+      </geometry>
+    </visual>
+    <collision name="i01.leftHand.ThumbMid_collision">
+      <origin xyz="0.000097 -0.015823 -0.002722" rpy="-1.432680 0.827760 -1.116700" />
+      <geometry>
+        <box size="0.038672 0.041293 0.032844" />
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="0.000097 -0.015823 -0.002722" rpy="-1.432680 0.827760 -1.116700" />
+      <mass value="0.01200" />
+      <inertia ixx="0.000002784" ixy="0" ixz="0" iyy="0.000002574" iyz="0" izz="0.000003201" />
+    </inertial>
+  </link>
+  <link name="i01.leftHand.wrist.001_link">
+    <visual name="i01.leftHand.Wristlarge.001">
+      <origin rpy="0.41605 -0.00000 0.61611" xyz="-0.414720 0.241462 -0.697213" />
+      <material name="Material.602" />
+      <geometry>
+        <mesh filename="meshes/Texture.235.stl" scale="0.10000 0.10000 0.10000" />
+      </geometry>
+    </visual>
+    <collision name="i01.leftHand.Wristlarge.001_collision">
+      <origin xyz="-0.000397 -0.000971 -0.046914" rpy="0.416050 -0.000000 0.616110" />
+      <geometry>
+        <box size="0.078637 0.087923 0.109242" />
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="-0.000397 -0.000971 -0.046914" rpy="0.416050 -0.000000 0.616110" />
+      <mass value="0.08000" />
+      <inertia ixx="0.000131095" ixy="0" ixz="0" iyy="0.000120784" iyz="0" izz="0.000092761" />
+    </inertial>
+  </link>
+  <material name="Material.601">
+    <color rgba="1.00000 1.00000 1.00000 1.00000" />
+  </material>
+  <material name="Material.602">
+    <color rgba="1.00000 1.00000 1.00000 1.00000" />
+  </material>
+  <material name="Material.603">
+    <color rgba="1.00000 1.00000 1.00000 1.00000" />
+  </material>
+  <material name="Material.604">
+    <color rgba="1.00000 1.00000 1.00000 1.00000" />
+  </material>
+  <material name="Material.605">
+    <color rgba="1.00000 1.00000 1.00000 1.00000" />
+  </material>
+  <material name="Material.606">
+    <color rgba="1.00000 1.00000 1.00000 1.00000" />
+  </material>
+  <material name="Material.607">
+    <color rgba="1.00000 1.00000 1.00000 1.00000" />
+  </material>
+  <material name="Material.608">
+    <color rgba="1.00000 1.00000 1.00000 1.00000" />
+  </material>
+  <material name="Material.609">
+    <color rgba="1.00000 1.00000 1.00000 1.00000" />
+  </material>
+  <material name="Material.610">
+    <color rgba="1.00000 1.00000 1.00000 1.00000" />
+  </material>
+  <material name="Material.611">
+    <color rgba="1.00000 1.00000 1.00000 1.00000" />
+  </material>
+  <material name="Material.612">
+    <color rgba="1.00000 1.00000 1.00000 1.00000" />
+  </material>
+  <material name="Material.613">
+    <color rgba="1.00000 1.00000 1.00000 1.00000" />
+  </material>
+  <material name="Material.614">
+    <color rgba="1.00000 1.00000 1.00000 1.00000" />
+  </material>
+  <material name="Material.615">
+    <color rgba="1.00000 1.00000 1.00000 1.00000" />
+  </material>
+  <material name="Material.616">
+    <color rgba="1.00000 1.00000 1.00000 1.00000" />
+  </material>
+  <material name="Material.617">
+    <color rgba="1.00000 1.00000 1.00000 1.00000" />
+  </material>
+  <material name="Material.618">
+    <color rgba="1.00000 1.00000 1.00000 1.00000" />
+  </material>
+  <joint name="hand_mount_joint" type="fixed">
+    <parent link="base_link" />
+    <child link="i01.leftHand.wrist.001_link" />
+    <origin xyz="0.000000 0.000000 0.000000" rpy="0 0 0" />
+  </joint>
+  <joint name="i01.leftHand.index2_link_joint" type="revolute">
+    <limit lower="0.00000" upper="1.57080" effort="0.00000" velocity="0.78540" />
+    <origin rpy="-0.00000 0.00000 -0.00000" xyz="0.000258 0.034105 0.000685" />
+    <parent link="i01.leftHand.index_link" />
+    <child link="i01.leftHand.index2_link" />
+    <axis xyz="-0.99994 0.00000 0.01111" />
+    <mimic joint="i01.leftHand.index_link_joint" multiplier="1.0" offset="0.0" />
+  </joint>
+  <joint name="i01.leftHand.index3_link_joint" type="revolute">
+    <limit lower="0.00000" upper="1.57080" effort="0.00000" velocity="0.78540" />
+    <origin rpy="0.00000 -0.00000 -0.00000" xyz="0.000103 0.022697 0.000433" />
+    <parent link="i01.leftHand.index2_link" />
+    <child link="i01.leftHand.index3_link" />
+    <axis xyz="-0.99994 0.00000 0.01111" />
+    <mimic joint="i01.leftHand.index_link_joint" multiplier="1.0" offset="0.0" />
+  </joint>
+  <joint name="i01.leftHand.index_link_joint" type="revolute">
+    <limit lower="0.00000" upper="1.57080" effort="2.0" velocity="0.78540" />
+    <origin rpy="-1.56854 -0.09096 -0.00330" xyz="0.032645 -0.001145 -0.094982" />
+    <parent link="i01.leftHand.wrist.001_link" />
+    <child link="i01.leftHand.index_link" />
+    <axis xyz="-0.99994 0.00000 0.01111" />
+  </joint>
+  <joint name="i01.leftHand.majeure2_link_joint" type="revolute">
+    <limit lower="0.00000" upper="1.57080" effort="0.00000" velocity="0.78540" />
+    <origin rpy="-0.00000 -0.00000 0.00000" xyz="0.000272 0.035935 0.000722" />
+    <parent link="i01.leftHand.majeure_link" />
+    <child link="i01.leftHand.majeure2_link" />
+    <axis xyz="-0.99994 0.00000 0.01111" />
+    <mimic joint="i01.leftHand.majeure_link_joint" multiplier="1.0" offset="0.0" />
+  </joint>
+  <joint name="i01.leftHand.majeure3_link_joint" type="revolute">
+    <limit lower="0.00000" upper="1.57080" effort="0.00000" velocity="0.78540" />
+    <origin rpy="0.00000 -0.00000 -0.00000" xyz="0.000109 0.023915 0.000456" />
+    <parent link="i01.leftHand.majeure2_link" />
+    <child link="i01.leftHand.majeure3_link" />
+    <axis xyz="-0.99994 0.00000 0.01111" />
+    <mimic joint="i01.leftHand.majeure_link_joint" multiplier="1.0" offset="0.0" />
+  </joint>
+  <joint name="i01.leftHand.majeure_link_joint" type="revolute">
+    <limit lower="0.00000" upper="1.57080" effort="2.0" velocity="0.78540" />
+    <origin rpy="-1.56854 0.00160 -0.00309" xyz="0.007161 -0.001170 -0.098881" />
+    <parent link="i01.leftHand.wrist.001_link" />
+    <child link="i01.leftHand.majeure_link" />
+    <axis xyz="-0.99994 0.00000 0.01111" />
+  </joint>
+  <joint name="i01.leftHand.pinky0_link_joint" type="fixed">
+    <origin rpy="-1.56789 -0.68643 -0.00494" xyz="-0.024002 0.000108 -0.035218" />
+    <parent link="i01.leftHand.wrist.001_link" />
+    <child link="i01.leftHand.pinky0_link" />
+  </joint>
+  <joint name="i01.leftHand.pinky2_link_joint" type="revolute">
+    <limit lower="0.00000" upper="1.57080" effort="0.00000" velocity="0.78540" />
+    <origin rpy="-0.00000 0.00000 -0.00000" xyz="0.000225 0.029796 0.000599" />
+    <parent link="i01.leftHand.pinky_link" />
+    <child link="i01.leftHand.pinky2_link" />
+    <axis xyz="-0.99994 0.00000 0.01111" />
+    <mimic joint="i01.leftHand.pinky_link_joint" multiplier="1.0" offset="0.0" />
+  </joint>
+  <joint name="i01.leftHand.pinky3_link_joint" type="revolute">
+    <limit lower="0.00000" upper="1.57080" effort="0.00000" velocity="0.78540" />
+    <origin rpy="-0.00000 -0.00000 -0.00000" xyz="0.000090 0.019830 0.000378" />
+    <parent link="i01.leftHand.pinky2_link" />
+    <child link="i01.leftHand.pinky3_link" />
+    <axis xyz="-0.99994 0.00000 0.01111" />
+    <mimic joint="i01.leftHand.pinky_link_joint" multiplier="1.0" offset="0.0" />
+  </joint>
+  <joint name="i01.leftHand.pinky_link_joint" type="revolute">
+    <limit lower="0.00000" upper="1.57080" effort="2.0" velocity="0.78540" />
+    <origin rpy="-0.00000 0.00000 0.94526" xyz="-0.043178 0.020489 0.000726" />
+    <parent link="i01.leftHand.pinky0_link" />
+    <child link="i01.leftHand.pinky_link" />
+    <axis xyz="-0.99994 0.00000 0.01111" />
+  </joint>
+  <joint name="i01.leftHand.ringFinger_link_joint" type="revolute">
+    <limit lower="0.00000" upper="1.57080" effort="2.0" velocity="0.78540" />
+    <origin rpy="-0.00000 0.00000 0.77485" xyz="-0.033329 0.015280 -0.000664" />
+    <parent link="i01.leftHand.ringfinger0_link" />
+    <child link="i01.leftHand.ringFinger_link" />
+    <axis xyz="-0.99994 0.00000 0.01111" />
+  </joint>
+  <joint name="i01.leftHand.ringfinger0_link_joint" type="fixed">
+    <origin rpy="-1.56789 -0.68643 -0.00494" xyz="-0.005673 0.000101 -0.057588" />
+    <parent link="i01.leftHand.wrist.001_link" />
+    <child link="i01.leftHand.ringfinger0_link" />
+  </joint>
+  <joint name="i01.leftHand.ringfinger2_link_joint" type="revolute">
+    <limit lower="0.00000" upper="1.57080" effort="0.00000" velocity="0.78540" />
+    <origin rpy="-0.00000 -0.00000 0.00000" xyz="0.000258 0.034105 0.000685" />
+    <parent link="i01.leftHand.ringFinger_link" />
+    <child link="i01.leftHand.ringfinger2_link" />
+    <axis xyz="-0.99994 0.00000 0.01111" />
+    <mimic joint="i01.leftHand.ringFinger_link_joint" multiplier="1.0" offset="0.0" />
+  </joint>
+  <joint name="i01.leftHand.ringfinger3_link_joint" type="revolute">
+    <limit lower="0.00000" upper="1.57080" effort="0.00000" velocity="0.78540" />
+    <origin rpy="-0.00000 0.00000 -0.00000" xyz="0.000103 0.022697 0.000433" />
+    <parent link="i01.leftHand.ringfinger2_link" />
+    <child link="i01.leftHand.ringfinger3_link" />
+    <axis xyz="-0.99994 0.00000 0.01111" />
+    <mimic joint="i01.leftHand.ringFinger_link_joint" multiplier="1.0" offset="0.0" />
+  </joint>
+  <joint name="i01.leftHand.thumb1_link_joint" type="revolute">
+    <limit lower="0.00000" upper="1.57080" effort="2.0" velocity="0.78540" />
+    <origin rpy="1.51635 -0.09893 -0.00332" xyz="0.028234 -0.000002 -0.037340" />
+    <parent link="i01.leftHand.wrist.001_link" />
+    <child link="i01.leftHand.thumb1_link" />
+    <axis xyz="0.00000 -0.99994 0.01111" />
+  </joint>
+  <joint name="i01.leftHand.thumb3_link_joint" type="revolute">
+    <limit lower="0.00000" upper="1.57080" effort="0.00000" velocity="0.78540" />
+    <origin rpy="0.00001 -0.00000 0.00000" xyz="0.001229 -0.033047 -0.000704" />
+    <parent link="i01.leftHand.thumb_link" />
+    <child link="i01.leftHand.thumb3_link" />
+    <axis xyz="-0.99994 0.00000 0.01111" />
+    <mimic joint="i01.leftHand.thumb1_link_joint" multiplier="1.0" offset="0.0" />
+  </joint>
+  <joint name="i01.leftHand.thumb_link_joint" type="revolute">
+    <limit lower="0.00000" upper="1.57080" effort="0.00000" velocity="0.78540" />
+    <origin rpy="-0.03182 -0.32566 0.83064" xyz="0.025977 -0.013332 -0.000800" />
+    <parent link="i01.leftHand.thumb1_link" />
+    <child link="i01.leftHand.thumb_link" />
+    <axis xyz="-0.99994 0.00000 0.01111" />
+    <mimic joint="i01.leftHand.thumb1_link_joint" multiplier="1.0" offset="0.0" />
+  </joint>
+</robot>

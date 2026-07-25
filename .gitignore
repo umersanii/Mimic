@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+
+# MediaPipe model (large binary, fetched via README/curl command)
+vision/models/*.task
+
+# Arduino
+*.hex
+build/
+
+# Gazebo / sim runtime artifacts
+sim/**/log/
+sim/**/*.log
+*.pb
+
+# OS / editor
+.DS_Store
+*.swp
+
+# Claude Code local state (settings, scheduled-task locks, etc.)
+.claude/
+Claude.md
+firmware/*
+hardware/
