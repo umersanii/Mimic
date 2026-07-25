@@ -60,7 +60,7 @@ curl -sL -o vision/models/hand_landmarker.task \
 
 ### Drive the simulated hand instead
 
-With the [Gazebo simulation](https://github.com/umersanii/Mimic-docs) set up:
+With the [Gazebo simulation](https://github.com/umersanii/Mimic-Docs) set up:
 
 ```fish
 python3 hand_tracker.py --no-serial --gazebo
@@ -72,7 +72,7 @@ The physical build isn't started yet, but it's fully planned: a tendon-driven ha
 finger, tendons routed through printed channels, elastic return), an Arduino reading finger angles
 over serial and driving the servos, and a bill of materials with the open decisions already
 identified (which hand STL to print, servo power supply sizing). That plan — the BOM, wiring
-notes, and firmware design — is written up in full on the [docs site](https://github.com/umersanii/Mimic-docs),
+notes, and firmware design — is written up in full on the [docs site](https://github.com/umersanii/Mimic-Docs),
 which is where it'll stay linked from once `firmware/` and `hardware/` land in this repo.
 
 ## Documentation
@@ -81,7 +81,7 @@ This README covers quick-start commands. The full reference documentation — ar
 how the vision-to-servo pipeline works, the simulation setup, and build/wiring notes, written
 for both newcomers and anyone who wants the technical detail — lives in a separate docs repo:
 
-**[umersanii/Mimic-docs](https://github.com/umersanii/Mimic-docs)** (deploys to GitHub Pages)
+**[umersanii/Mimic-Docs](https://github.com/umersanii/Mimic-Docs)** (deploys to GitHub Pages)
 
 ## Contributing
 
