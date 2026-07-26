@@ -55,8 +55,9 @@ def _blend_rect(frame, x, y, w, h, color, alpha):
     cv2.addWeighted(overlay, alpha, roi, 1 - alpha, 0, dst=roi)
 
 
-def draw_skeleton(frame, points, connections):
-    """points: list of (x, y) pixel coords indexed by landmark id (0-20)."""
+def draw_skeleton(frame, points, connections, label=None):
+    """points: list of (x, y) pixel coords indexed by landmark id (0-20).
+    label: "L"/"R" tag drawn near the wrist point, for dual-hand tracking."""
     for conn in connections:
         fa = _LANDMARK_FINGER.get(conn.start)
         fb = _LANDMARK_FINGER.get(conn.end)
@@ -67,6 +68,8 @@ def draw_skeleton(frame, points, connections):
         if idx == 0:
             cv2.circle(frame, (x, y), 7, WRIST_COLOR, -1, cv2.LINE_AA)
             cv2.circle(frame, (x, y), 7, PANEL_BG_DEEP, 1, cv2.LINE_AA)
+            if label:
+                cv2.putText(frame, label, (x + 12, y + 5), FONT, 0.55, TEXT, 1, cv2.LINE_AA)
             continue
         color = FINGER_COLORS[_LANDMARK_FINGER[idx]]
         radius = 6 if idx in _FINGERTIPS else 3
@@ -127,35 +130,54 @@ def draw_gazebo_status(frame, state):
                 FONT, 0.5, TEXT, 1, cv2.LINE_AA)
 
 
-def draw_finger_gauges(frame, curls, finger_order, finger_count):
-    """curls: {finger_name: 0.0-1.0 flexion fraction, 1.0 = fully curled}."""
-    h, w = frame.shape[:2]
-    panel_h = 84
-    y0 = h - panel_h
-    _blend_rect(frame, 0, y0, w, panel_h, PANEL_BG, 0.55)
-
+def _draw_gauge_row(frame, y0, row_h, hand_label, curls, finger_order, finger_count, tracked):
+    """One hand's worth of finger bars, e.g. the top or bottom half of the dual-hand panel."""
+    w = frame.shape[1]
     margin = 24
     gap = 14
     n = len(finger_order)
-    bar_w = (w - 2 * margin - (n - 1) * gap - 130) // n
-    bar_top = y0 + 14
-    bar_h = 34
+    bar_w = (w - 2 * margin - (n - 1) * gap - 160) // n
+    bar_top = y0 + 10
+    bar_h = row_h - 34
+
+    tag_color = TEXT if tracked else TEXT_MUTED
+    cv2.putText(frame, hand_label, (margin - 18, bar_top + bar_h // 2 + 6),
+                FONT, 0.6, tag_color, 1, cv2.LINE_AA)
 
     for i, name in enumerate(finger_order):
         x = margin + i * (bar_w + gap)
-        color = FINGER_COLORS[name]
+        color = FINGER_COLORS[name] if tracked else TRACK_BG
         cv2.rectangle(frame, (x, bar_top), (x + bar_w, bar_top + bar_h), TRACK_BG, -1)
-        t = 0.0 if curls is None else float(np.clip(curls.get(name, 0.0), 0.0, 1.0))
+        t = 0.0 if not tracked else float(np.clip(curls.get(name, 0.0), 0.0, 1.0))
         fill_w = int(bar_w * t)
         if fill_w > 0:
             cv2.rectangle(frame, (x, bar_top), (x + fill_w, bar_top + bar_h), color, -1)
         cv2.rectangle(frame, (x, bar_top), (x + bar_w, bar_top + bar_h), PANEL_BG_DEEP, 1)
         label = FINGER_LABELS[name]
-        (tw, _), _ = cv2.getTextSize(label, FONT, 0.5, 1)
-        cv2.putText(frame, label, (x + bar_w // 2 - tw // 2, bar_top + bar_h + 18),
-                    FONT, 0.5, TEXT_MUTED, 1, cv2.LINE_AA)
+        (tw, _), _ = cv2.getTextSize(label, FONT, 0.45, 1)
+        cv2.putText(frame, label, (x + bar_w // 2 - tw // 2, bar_top + bar_h + 15),
+                    FONT, 0.45, TEXT_MUTED, 1, cv2.LINE_AA)
 
     chip_x = w - margin - 110
-    chip_label = f"FINGERS {finger_count}/5"
+    chip_label = f"{finger_count}/5" if tracked else "NOT TRACKED"
     cv2.putText(frame, chip_label, (chip_x, bar_top + bar_h // 2 + 6),
-                FONT, 0.6, TEXT, 1, cv2.LINE_AA)
+                FONT, 0.55, TEXT if tracked else TEXT_MUTED, 1, cv2.LINE_AA)
+
+
+def draw_finger_gauges(frame, curls_by_hand, finger_order, counts_by_hand, visible_labels=()):
+    """curls_by_hand / counts_by_hand: {"L": {...}/int, "R": {...}/int} - may hold a
+    hand's last-known values even after it leaves the frame (see hand_tracker.py).
+    visible_labels: which hands are actually in view *this* frame - drives the
+    dimmed "NOT TRACKED" state, independent of whether curls_by_hand still has
+    stale data for a hand that left."""
+    h, w = frame.shape[:2]
+    row_h = 68
+    panel_h = row_h * 2
+    y0 = h - panel_h
+    _blend_rect(frame, 0, y0, w, panel_h, PANEL_BG, 0.55)
+    cv2.line(frame, (0, y0 + row_h), (w, y0 + row_h), PANEL_BG_DEEP, 1)
+
+    for i, label in enumerate(("L", "R")):
+        _draw_gauge_row(frame, y0 + i * row_h, row_h, label,
+                         curls_by_hand.get(label), finger_order, counts_by_hand.get(label, 0),
+                         tracked=label in visible_labels)

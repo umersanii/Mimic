@@ -45,7 +45,7 @@ FINGER_ORDER = ["thumb", "index", "middle", "ring", "pinky"]
 
 
 class HandDetector:
-    def __init__(self, model_path=MODEL_PATH, max_hands=1, detection_conf=0.7, tracking_conf=0.7):
+    def __init__(self, model_path=MODEL_PATH, max_hands=2, detection_conf=0.7, tracking_conf=0.7):
         options = HandLandmarkerOptions(
             base_options=BaseOptions(model_asset_path=model_path),
             running_mode=RunningMode.VIDEO,
@@ -54,7 +54,9 @@ class HandDetector:
             min_tracking_confidence=tracking_conf,
         )
         self.landmarker = HandLandmarker.create_from_options(options)
-        self.landmarks = None
+        # {"L": [landmarks...], "R": [landmarks...]} for whichever hands are visible
+        # this frame - absent key means that hand isn't currently tracked.
+        self.hands = {}
         self._start_time = time.time()
 
     def find_hands(self, frame, draw=True):
@@ -63,44 +65,53 @@ class HandDetector:
         timestamp_ms = int((time.time() - self._start_time) * 1000)
         result = self.landmarker.detect_for_video(mp_image, timestamp_ms)
 
-        self.landmarks = None
-        if result.hand_landmarks:
-            self.landmarks = result.hand_landmarks[0]
-            if draw:
-                self._draw_landmarks(frame)
+        self.hands = {}
+        for landmarks, handedness in zip(result.hand_landmarks, result.handedness):
+            # `frame` is already mirrored (cv2.flip in main()) before detection, so
+            # MediaPipe reads a selfie-view image as if it weren't mirrored - its
+            # "Left"/"Right" call is therefore inverted relative to the real hand.
+            label = "R" if handedness[0].category_name == "Left" else "L"
+            self.hands[label] = landmarks
+
+        if draw:
+            self._draw_landmarks(frame)
         return frame
 
     def _draw_landmarks(self, frame):
         h, w = frame.shape[:2]
-        points = [(int(lm.x * w), int(lm.y * h)) for lm in self.landmarks]
-        hud.draw_skeleton(frame, points, HandLandmarksConnections.HAND_CONNECTIONS)
+        for label, landmarks in self.hands.items():
+            points = [(int(lm.x * w), int(lm.y * h)) for lm in landmarks]
+            hud.draw_skeleton(frame, points, HandLandmarksConnections.HAND_CONNECTIONS, label)
 
-    def _xy(self, idx, w, h):
-        lm = self.landmarks[idx]
+    @staticmethod
+    def _xy(landmarks, idx, w, h):
+        lm = landmarks[idx]
         return np.array([lm.x * w, lm.y * h])
 
     def get_angles(self, frame_shape):
-        """Return {finger_name: angle_degrees} - 180 = straight, smaller = curled."""
-        if self.landmarks is None:
-            return None
+        """Return {"L": {finger_name: angle_degrees}, "R": {...}} for currently
+        visible hands only - 180 = straight, smaller = curled."""
         h, w = frame_shape[:2]
-        angles = {}
-        for name, (mcp_i, pip_i, tip_i) in FINGER_JOINTS.items():
-            wrist = self._xy(0, w, h)
-            mcp = self._xy(mcp_i, w, h)
-            tip = self._xy(tip_i, w, h)
-            a = wrist if name != "thumb" else self._xy(1, w, h)
-            b = mcp
-            c = tip
-            ba = a - b
-            bc = c - b
-            cos_angle = np.dot(ba, bc) / (np.linalg.norm(ba) * np.linalg.norm(bc) + 1e-6)
-            angle = np.degrees(np.arccos(np.clip(cos_angle, -1.0, 1.0)))
-            angles[name] = angle
-        return angles
+        result = {}
+        for label, landmarks in self.hands.items():
+            angles = {}
+            for name, (mcp_i, pip_i, tip_i) in FINGER_JOINTS.items():
+                wrist = self._xy(landmarks, 0, w, h)
+                mcp = self._xy(landmarks, mcp_i, w, h)
+                tip = self._xy(landmarks, tip_i, w, h)
+                a = wrist if name != "thumb" else self._xy(landmarks, 1, w, h)
+                b = mcp
+                c = tip
+                ba = a - b
+                bc = c - b
+                cos_angle = np.dot(ba, bc) / (np.linalg.norm(ba) * np.linalg.norm(bc) + 1e-6)
+                angle = np.degrees(np.arccos(np.clip(cos_angle, -1.0, 1.0)))
+                angles[name] = angle
+            result[label] = angles
+        return result
 
     def count_extended(self, angles, threshold=110):
-        if angles is None:
+        if not angles:
             return 0
         return sum(1 for a in angles.values() if a > threshold)
 
@@ -167,7 +178,11 @@ def main():
     detector = HandDetector()
     prev_time = time.time()
     fps_smoothed = 0.0
-    smoothed_angles = None  # EMA state, carried across frames to damp landmark jitter
+    # EMA state per hand ("L"/"R"), carried across frames to damp landmark jitter.
+    # Entries persist even once a hand leaves the frame (see the loop below) so
+    # the Gazebo bridge holds that hand's last-known pose instead of snapping it
+    # to a default when tracking drops - a mid-frame reset looks like a glitch.
+    smoothed_angles = {}
 
     while True:
         ok, frame = cap.read()
@@ -175,53 +190,59 @@ def main():
             break
         frame = cv2.flip(frame, 1)
         frame = detector.find_hands(frame)
-        angles = detector.get_angles(frame.shape)
+        angles_by_hand = detector.get_angles(frame.shape)
 
-        if angles is not None:
-            if smoothed_angles is None:
-                smoothed_angles = dict(angles)
+        for label, angles in angles_by_hand.items():
+            if label not in smoothed_angles:
+                smoothed_angles[label] = dict(angles)
             else:
                 a = args.smoothing
-                smoothed_angles = {
-                    f: a * angles[f] + (1 - a) * smoothed_angles[f] for f in FINGER_ORDER
+                smoothed_angles[label] = {
+                    f: a * angles[f] + (1 - a) * smoothed_angles[label][f] for f in FINGER_ORDER
                 }
-            angles = smoothed_angles
-        else:
-            smoothed_angles = None  # hand lost - don't smooth into a stale pose on reacquire
 
         now = time.time()
         fps = 1.0 / (now - prev_time) if now != prev_time else 0.0
         prev_time = now
         fps_smoothed = fps if fps_smoothed == 0.0 else fps_smoothed * 0.9 + fps * 0.1
 
-        curls = None
-        if angles is not None:
-            curls = {f: 1.0 - curl_fraction(angles[f]) for f in FINGER_ORDER}
-            servo_cmds = [angle_to_servo(angles[f]) for f in FINGER_ORDER]
-            if ser is not None:
-                try:
-                    line = ",".join(str(v) for v in servo_cmds) + "\n"
-                    ser.write(line.encode("ascii"))
-                    serial_state = "connected"
-                except serial.SerialException:
-                    serial_state = "disconnected"
-            if gz_bridge is not None:
-                try:
-                    line = ",".join(str(curls[f]) for f in FINGER_ORDER) + "\n"
+        curls_by_hand = {
+            label: {f: 1.0 - curl_fraction(a[f]) for f in FINGER_ORDER}
+            for label, a in smoothed_angles.items()
+        }
+        counts_by_hand = {
+            label: detector.count_extended(a) for label, a in smoothed_angles.items()
+        }
+
+        # Serial (real hardware) only exists for one physical hand today - drive it
+        # from whichever hand was detected first this frame, unchanged single-hand
+        # behavior from before dual-hand tracking existed.
+        primary_label = next(iter(detector.hands), None)
+        if primary_label is not None and ser is not None:
+            servo_cmds = [angle_to_servo(smoothed_angles[primary_label][f]) for f in FINGER_ORDER]
+            try:
+                line = ",".join(str(v) for v in servo_cmds) + "\n"
+                ser.write(line.encode("ascii"))
+                serial_state = "connected"
+            except serial.SerialException:
+                serial_state = "disconnected"
+
+        if gz_bridge is not None and curls_by_hand:
+            try:
+                for label, curls in curls_by_hand.items():
+                    line = label + "," + ",".join(str(curls[f]) for f in FINGER_ORDER) + "\n"
                     gz_bridge.stdin.write(line)
-                    gz_bridge.stdin.flush()
-                    gazebo_state = "connected"
-                except (BrokenPipeError, OSError):
-                    gazebo_state = "disconnected"
-            finger_count = detector.count_extended(angles)
-        else:
-            finger_count = 0
+                gz_bridge.stdin.flush()
+                gazebo_state = "connected"
+            except (BrokenPipeError, OSError):
+                gazebo_state = "disconnected"
 
         hud.draw_header(frame, fps_smoothed)
         hud.draw_serial_status(frame, serial_state)
         if gz_bridge is not None or args.gazebo:
             hud.draw_gazebo_status(frame, gazebo_state)
-        hud.draw_finger_gauges(frame, curls, FINGER_ORDER, finger_count)
+        hud.draw_finger_gauges(frame, curls_by_hand, FINGER_ORDER, counts_by_hand,
+                                visible_labels=detector.hands.keys())
         cv2.imshow("Robotic Hand Control", frame)
 
         if cv2.waitKey(1) & 0xFF == ord("q"):
