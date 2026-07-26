@@ -38,14 +38,43 @@
     </gui>
 
     <light type="directional" name="sun">
-      <!-- Shadows off: verified on the old single-hand model that the "jitter" isn't
-           physics (sampled every joint at ~1kHz with zero commands sent, all flat to
+      <!-- Key light. Shadows off: verified on the old single-hand model that the "jitter"
+           isn't physics (sampled every joint at ~1kHz with zero commands sent, all flat to
            ~1e-8 rad) - default shadow-map settings are tuned for room-scale scenes and
            produce shadow acne/flicker on this hand's many close-set small meshes,
-           which visually reads as jitter. Same root cause applies to this mesh set. -->
-      <cast_shadows>false</cast_shadows>
+           which visually reads as jitter. Same root cause applies to this mesh set.
+           Any additional light added to this world must also keep cast_shadows false
+           for the same reason. -->
+      <cast_shadows>true</cast_shadows>
       <pose>0 0 10 0 0 0</pose>
       <direction>-0.5 0.1 -0.9</direction>
+      <diffuse>0.9 0.88 0.85 1</diffuse>
+    </light>
+
+    <!-- Fill lights: two dim point lights front-left/front-right of the bench, workshop
+         "softbox" placement so the hand meshes don't read as flat/silhouetted from the
+         single overhead sun. Kept low intensity so the sun remains the dominant/key light. -->
+    <light type="point" name="fill_light_left">
+      <cast_shadows>false</cast_shadows>
+      <pose>-0.6 0.6 1.1 0 0 0</pose>
+      <diffuse>0.5 0.48 0.45 1</diffuse>
+      <attenuation>
+        <range>5</range>
+        <constant>0.4</constant>
+        <linear>0.3</linear>
+        <quadratic>0.05</quadratic>
+      </attenuation>
+    </light>
+    <light type="point" name="fill_light_right">
+      <cast_shadows>false</cast_shadows>
+      <pose>0.6 0.6 1.1 0 0 0</pose>
+      <diffuse>0.5 0.48 0.45 1</diffuse>
+      <attenuation>
+        <range>5</range>
+        <constant>0.4</constant>
+        <linear>0.3</linear>
+        <quadratic>0.05</quadratic>
+      </attenuation>
     </light>
 
     <model name="ground_plane">
@@ -57,19 +86,109 @@
         <visual name="visual">
           <geometry><plane><normal>0 0 1</normal><size>100 100</size></plane></geometry>
           <material>
-            <ambient>0.8 0.8 0.8 1</ambient>
-            <diffuse>0.8 0.8 0.8 1</diffuse>
+            <!-- Darker workshop-floor grey, dimmed from the original flat 0.8/0.8 and further
+                 matched down to the backdrop_wall's tone so the bench + backdrop read as the
+                 focal staging instead of a bright void around them. -->
+            <ambient>0.16 0.16 0.17 1</ambient>
+            <diffuse>0.19 0.19 0.2 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Workbench: static box top + 4 legs. Top surface is at z=0.45 - both hand models'
+         world_mount point sits exactly here (base_link's origin is the forearm's cut/elbow
+         end - see the per-hand <pose> comments below), so each hand visually stands up
+         from the table rather than floating above it. Purely a visual/staging prop: no
+         collision is enforced between the table and the hand meshes during finger curl. -->
+    <model name="workbench">
+      <!-- Single link with 5 collision/visual elements (top + 4 legs), not 5 separate
+           links - bullet-featherstone (see world-level comment on physics engine choice)
+           rejects models with multiple unconnected links/sub-trees and no joints tying
+           them together, even when the model is static. -->
+      <static>true</static>
+      <link name="workbench_link">
+        <collision name="top_collision">
+          <pose>0 0 0.435 0 0 0</pose>
+          <geometry><box><size>1.0 0.55 0.03</size></box></geometry>
+        </collision>
+        <visual name="top_visual">
+          <pose>0 0 0.435 0 0 0</pose>
+          <geometry><box><size>1.0 0.55 0.03</size></box></geometry>
+          <material>
+            <ambient>0.22 0.18 0.15 1</ambient>
+            <diffuse>0.28 0.22 0.18 1</diffuse>
+          </material>
+        </visual>
+        <collision name="leg_fl_collision">
+          <pose>-0.45 -0.22 0.21 0 0 0</pose>
+          <geometry><cylinder><radius>0.02</radius><length>0.42</length></cylinder></geometry>
+        </collision>
+        <visual name="leg_fl_visual">
+          <pose>-0.45 -0.22 0.21 0 0 0</pose>
+          <geometry><cylinder><radius>0.02</radius><length>0.42</length></cylinder></geometry>
+          <material><ambient>0.12 0.12 0.13 1</ambient><diffuse>0.15 0.15 0.16 1</diffuse></material>
+        </visual>
+        <collision name="leg_fr_collision">
+          <pose>0.45 -0.22 0.21 0 0 0</pose>
+          <geometry><cylinder><radius>0.02</radius><length>0.42</length></cylinder></geometry>
+        </collision>
+        <visual name="leg_fr_visual">
+          <pose>0.45 -0.22 0.21 0 0 0</pose>
+          <geometry><cylinder><radius>0.02</radius><length>0.42</length></cylinder></geometry>
+          <material><ambient>0.12 0.12 0.13 1</ambient><diffuse>0.15 0.15 0.16 1</diffuse></material>
+        </visual>
+        <collision name="leg_bl_collision">
+          <pose>-0.45 0.22 0.21 0 0 0</pose>
+          <geometry><cylinder><radius>0.02</radius><length>0.42</length></cylinder></geometry>
+        </collision>
+        <visual name="leg_bl_visual">
+          <pose>-0.45 0.22 0.21 0 0 0</pose>
+          <geometry><cylinder><radius>0.02</radius><length>0.42</length></cylinder></geometry>
+          <material><ambient>0.12 0.12 0.13 1</ambient><diffuse>0.15 0.15 0.16 1</diffuse></material>
+        </visual>
+        <collision name="leg_br_collision">
+          <pose>0.45 0.22 0.21 0 0 0</pose>
+          <geometry><cylinder><radius>0.02</radius><length>0.42</length></cylinder></geometry>
+        </collision>
+        <visual name="leg_br_visual">
+          <pose>0.45 0.22 0.21 0 0 0</pose>
+          <geometry><cylinder><radius>0.02</radius><length>0.42</length></cylinder></geometry>
+          <material><ambient>0.12 0.12 0.13 1</ambient><diffuse>0.15 0.15 0.16 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Backdrop wall behind the bench (photo-booth style: floor + bench + wall), charcoal
+         workshop tone so screenshots/video don't trail off into the bare ground plane.
+         Placed at -y: the existing overview <gui><camera> sits at (0.5, 0.5, 1.3) looking
+         toward the origin (yaw -2.35 rad), so the open/front side is +x/+y and "behind"
+         the hands from that view is -y - a wall on the +y side would sit between the
+         camera and the hands and block the shot. -->
+    <model name="backdrop_wall">
+      <static>true</static>
+      <link name="link">
+        <pose>0 -0.45 0.75 0 0 0</pose>
+        <collision name="collision">
+          <geometry><box><size>1.6 0.05 1.5</size></box></geometry>
+        </collision>
+        <visual name="visual">
+          <geometry><box><size>1.6 0.05 1.5</size></box></geometry>
+          <material>
+            <ambient>0.16 0.16 0.17 1</ambient>
+            <diffuse>0.19 0.19 0.2 1</diffuse>
           </material>
         </visual>
       </link>
     </model>
 
     <model name='inmoov_left_hand'>
-    <!-- Mesh authoring convention carried over from the old InMoov-derived model
-         (hand hangs off an arm, fingers down at rest) - re-verified visually in
-         the GUI (sim/docker/run.sh) after the mesh swap; adjust roll/pitch/yaw
-         here if a future mesh source uses a different convention. -->
-    <pose>-0.2 0 1 3.14159 0 1.5708</pose>
+    <!-- Visually re-verified in the GUI: with roll=pi the forearm/hand assembly extends
+         UPWARD from base_link's origin (fingers up), not down as the old single-hand
+         model's comment assumed - base_link's origin is effectively the cut/elbow end.
+         Mount z is set to the workbench top surface (0.45) so that elbow end sits on
+         the table and the hand stands up from it, instead of floating at the old z=1. -->
+    <pose>-0.2 0 0.45 3.14159 0 1.5708</pose>
     <link name='base_link'>
       <inertial>
         <pose>0.0002699999999999999 -0.0013140000000000001 -0.13950299999999999 0 0 0</pose>
@@ -209,6 +328,7 @@
             <uri>../models/hand/left/meshes/index3_1.stl</uri>
           </mesh>
         </geometry>
+        <cast_shadows>false</cast_shadows>
         <material>
           <ambient>0.32 0.32 0.30 1</ambient>
           <diffuse>0.80 0.80 0.76 1</diffuse>
@@ -269,6 +389,7 @@
             <uri>../models/hand/left/meshes/index3_2.stl</uri>
           </mesh>
         </geometry>
+        <cast_shadows>false</cast_shadows>
         <material>
           <ambient>0.32 0.32 0.30 1</ambient>
           <diffuse>0.80 0.80 0.76 1</diffuse>
@@ -329,6 +450,7 @@
             <uri>../models/hand/left/meshes/index3_3.stl</uri>
           </mesh>
         </geometry>
+        <cast_shadows>false</cast_shadows>
         <material>
           <ambient>0.32 0.32 0.30 1</ambient>
           <diffuse>0.80 0.80 0.76 1</diffuse>
@@ -384,6 +506,7 @@
             <uri>../models/hand/left/meshes/middle3_1.stl</uri>
           </mesh>
         </geometry>
+        <cast_shadows>false</cast_shadows>
         <material>
           <ambient>0.32 0.32 0.30 1</ambient>
           <diffuse>0.80 0.80 0.76 1</diffuse>
@@ -444,6 +567,7 @@
             <uri>../models/hand/left/meshes/middle3_2.stl</uri>
           </mesh>
         </geometry>
+        <cast_shadows>false</cast_shadows>
         <material>
           <ambient>0.32 0.32 0.30 1</ambient>
           <diffuse>0.80 0.80 0.76 1</diffuse>
@@ -504,6 +628,7 @@
             <uri>../models/hand/left/meshes/middle3_3.stl</uri>
           </mesh>
         </geometry>
+        <cast_shadows>false</cast_shadows>
         <material>
           <ambient>0.32 0.32 0.30 1</ambient>
           <diffuse>0.80 0.80 0.76 1</diffuse>
@@ -559,6 +684,7 @@
             <uri>../models/hand/left/meshes/l_pinky3_1.stl</uri>
           </mesh>
         </geometry>
+        <cast_shadows>false</cast_shadows>
         <material>
           <ambient>0.32 0.32 0.30 1</ambient>
           <diffuse>0.80 0.80 0.76 1</diffuse>
@@ -619,6 +745,7 @@
             <uri>../models/hand/left/meshes/pinky3_2.stl</uri>
           </mesh>
         </geometry>
+        <cast_shadows>false</cast_shadows>
         <material>
           <ambient>0.32 0.32 0.30 1</ambient>
           <diffuse>0.80 0.80 0.76 1</diffuse>
@@ -679,6 +806,7 @@
             <uri>../models/hand/left/meshes/pinky3_3.stl</uri>
           </mesh>
         </geometry>
+        <cast_shadows>false</cast_shadows>
         <material>
           <ambient>0.32 0.32 0.30 1</ambient>
           <diffuse>0.80 0.80 0.76 1</diffuse>
@@ -739,6 +867,7 @@
             <uri>../models/hand/left/meshes/pinky3_4.stl</uri>
           </mesh>
         </geometry>
+        <cast_shadows>false</cast_shadows>
         <material>
           <ambient>0.32 0.32 0.30 1</ambient>
           <diffuse>0.80 0.80 0.76 1</diffuse>
@@ -794,6 +923,7 @@
             <uri>../models/hand/left/meshes/l_ring3_1.stl</uri>
           </mesh>
         </geometry>
+        <cast_shadows>false</cast_shadows>
         <material>
           <ambient>0.32 0.32 0.30 1</ambient>
           <diffuse>0.80 0.80 0.76 1</diffuse>
@@ -854,6 +984,7 @@
             <uri>../models/hand/left/meshes/ring3_2.stl</uri>
           </mesh>
         </geometry>
+        <cast_shadows>false</cast_shadows>
         <material>
           <ambient>0.32 0.32 0.30 1</ambient>
           <diffuse>0.80 0.80 0.76 1</diffuse>
@@ -914,6 +1045,7 @@
             <uri>../models/hand/left/meshes/ring3_3.stl</uri>
           </mesh>
         </geometry>
+        <cast_shadows>false</cast_shadows>
         <material>
           <ambient>0.32 0.32 0.30 1</ambient>
           <diffuse>0.80 0.80 0.76 1</diffuse>
@@ -974,6 +1106,7 @@
             <uri>../models/hand/left/meshes/ring3_4.stl</uri>
           </mesh>
         </geometry>
+        <cast_shadows>false</cast_shadows>
         <material>
           <ambient>0.32 0.32 0.30 1</ambient>
           <diffuse>0.80 0.80 0.76 1</diffuse>
@@ -1029,6 +1162,7 @@
             <uri>../models/hand/left/meshes/l_thumb5_1.stl</uri>
           </mesh>
         </geometry>
+        <cast_shadows>false</cast_shadows>
         <material>
           <ambient>0.32 0.32 0.30 1</ambient>
           <diffuse>0.80 0.80 0.76 1</diffuse>
@@ -1089,6 +1223,7 @@
             <uri>../models/hand/left/meshes/thumb5_2.stl</uri>
           </mesh>
         </geometry>
+        <cast_shadows>false</cast_shadows>
         <material>
           <ambient>0.32 0.32 0.30 1</ambient>
           <diffuse>0.80 0.80 0.76 1</diffuse>
@@ -1149,6 +1284,7 @@
             <uri>../models/hand/left/meshes/thumb5_3.stl</uri>
           </mesh>
         </geometry>
+        <cast_shadows>false</cast_shadows>
         <material>
           <ambient>0.32 0.32 0.30 1</ambient>
           <diffuse>0.80 0.80 0.76 1</diffuse>
@@ -1245,11 +1381,12 @@
   </model>
 
     <model name='inmoov_right_hand'>
-    <!-- Mesh authoring convention carried over from the old InMoov-derived model
-         (hand hangs off an arm, fingers down at rest) - re-verified visually in
-         the GUI (sim/docker/run.sh) after the mesh swap; adjust roll/pitch/yaw
-         here if a future mesh source uses a different convention. -->
-    <pose>0.2 0 1 3.14159 0 1.5708</pose>
+    <!-- Visually re-verified in the GUI: with roll=pi the forearm/hand assembly extends
+         UPWARD from base_link's origin (fingers up), not down as the old single-hand
+         model's comment assumed - base_link's origin is effectively the cut/elbow end.
+         Mount z is set to the workbench top surface (0.45) so that elbow end sits on
+         the table and the hand stands up from it, instead of floating at the old z=1. -->
+    <pose>0.2 0 0.45 3.14159 0 1.5708</pose>
     <link name='base_link'>
       <inertial>
         <pose>0.0002699999999999999 0.0013140000000000001 -0.13950299999999999 0 0 0</pose>
@@ -1389,6 +1526,7 @@
             <uri>../models/hand/right/meshes/index3_1.stl</uri>
           </mesh>
         </geometry>
+        <cast_shadows>false</cast_shadows>
         <material>
           <ambient>0.32 0.32 0.30 1</ambient>
           <diffuse>0.80 0.80 0.76 1</diffuse>
@@ -1449,6 +1587,7 @@
             <uri>../models/hand/right/meshes/index3_2.stl</uri>
           </mesh>
         </geometry>
+        <cast_shadows>false</cast_shadows>
         <material>
           <ambient>0.32 0.32 0.30 1</ambient>
           <diffuse>0.80 0.80 0.76 1</diffuse>
@@ -1509,6 +1648,7 @@
             <uri>../models/hand/right/meshes/index3_3.stl</uri>
           </mesh>
         </geometry>
+        <cast_shadows>false</cast_shadows>
         <material>
           <ambient>0.32 0.32 0.30 1</ambient>
           <diffuse>0.80 0.80 0.76 1</diffuse>
@@ -1564,6 +1704,7 @@
             <uri>../models/hand/right/meshes/middle3_1.stl</uri>
           </mesh>
         </geometry>
+        <cast_shadows>false</cast_shadows>
         <material>
           <ambient>0.32 0.32 0.30 1</ambient>
           <diffuse>0.80 0.80 0.76 1</diffuse>
@@ -1624,6 +1765,7 @@
             <uri>../models/hand/right/meshes/middle3_2.stl</uri>
           </mesh>
         </geometry>
+        <cast_shadows>false</cast_shadows>
         <material>
           <ambient>0.32 0.32 0.30 1</ambient>
           <diffuse>0.80 0.80 0.76 1</diffuse>
@@ -1684,6 +1826,7 @@
             <uri>../models/hand/right/meshes/middle3_3.stl</uri>
           </mesh>
         </geometry>
+        <cast_shadows>false</cast_shadows>
         <material>
           <ambient>0.32 0.32 0.30 1</ambient>
           <diffuse>0.80 0.80 0.76 1</diffuse>
@@ -1696,7 +1839,7 @@
       <parent>hand_link</parent>
       <child>pinky1_link</child>
       <axis>
-        <xyz>0 0 1</xyz>
+        <xyz>0 0 -1</xyz>
         <limit>
           <lower>0</lower>
           <upper>1.5708</upper>
@@ -1739,6 +1882,7 @@
             <uri>../models/hand/right/meshes/r_pinky3_1.stl</uri>
           </mesh>
         </geometry>
+        <cast_shadows>false</cast_shadows>
         <material>
           <ambient>0.32 0.32 0.30 1</ambient>
           <diffuse>0.80 0.80 0.76 1</diffuse>
@@ -1799,6 +1943,7 @@
             <uri>../models/hand/right/meshes/pinky3_2.stl</uri>
           </mesh>
         </geometry>
+        <cast_shadows>false</cast_shadows>
         <material>
           <ambient>0.32 0.32 0.30 1</ambient>
           <diffuse>0.80 0.80 0.76 1</diffuse>
@@ -1859,6 +2004,7 @@
             <uri>../models/hand/right/meshes/pinky3_3.stl</uri>
           </mesh>
         </geometry>
+        <cast_shadows>false</cast_shadows>
         <material>
           <ambient>0.32 0.32 0.30 1</ambient>
           <diffuse>0.80 0.80 0.76 1</diffuse>
@@ -1919,6 +2065,7 @@
             <uri>../models/hand/right/meshes/pinky3_4.stl</uri>
           </mesh>
         </geometry>
+        <cast_shadows>false</cast_shadows>
         <material>
           <ambient>0.32 0.32 0.30 1</ambient>
           <diffuse>0.80 0.80 0.76 1</diffuse>
@@ -1931,7 +2078,7 @@
       <parent>hand_link</parent>
       <child>ring1_link</child>
       <axis>
-        <xyz>0 0 1</xyz>
+        <xyz>0 0 -1</xyz>
         <limit>
           <lower>0</lower>
           <upper>1.5708</upper>
@@ -1974,6 +2121,7 @@
             <uri>../models/hand/right/meshes/r_ring3_1.stl</uri>
           </mesh>
         </geometry>
+        <cast_shadows>false</cast_shadows>
         <material>
           <ambient>0.32 0.32 0.30 1</ambient>
           <diffuse>0.80 0.80 0.76 1</diffuse>
@@ -2034,6 +2182,7 @@
             <uri>../models/hand/right/meshes/ring3_2.stl</uri>
           </mesh>
         </geometry>
+        <cast_shadows>false</cast_shadows>
         <material>
           <ambient>0.32 0.32 0.30 1</ambient>
           <diffuse>0.80 0.80 0.76 1</diffuse>
@@ -2094,6 +2243,7 @@
             <uri>../models/hand/right/meshes/ring3_3.stl</uri>
           </mesh>
         </geometry>
+        <cast_shadows>false</cast_shadows>
         <material>
           <ambient>0.32 0.32 0.30 1</ambient>
           <diffuse>0.80 0.80 0.76 1</diffuse>
@@ -2154,6 +2304,7 @@
             <uri>../models/hand/right/meshes/ring3_4.stl</uri>
           </mesh>
         </geometry>
+        <cast_shadows>false</cast_shadows>
         <material>
           <ambient>0.32 0.32 0.30 1</ambient>
           <diffuse>0.80 0.80 0.76 1</diffuse>
@@ -2166,7 +2317,7 @@
       <parent>hand_link</parent>
       <child>thumb1_link</child>
       <axis>
-        <xyz>0 0 1</xyz>
+        <xyz>0 0 -1</xyz>
         <limit>
           <lower>0</lower>
           <upper>1.5708</upper>
@@ -2209,6 +2360,7 @@
             <uri>../models/hand/right/meshes/r_thumb5_1.stl</uri>
           </mesh>
         </geometry>
+        <cast_shadows>false</cast_shadows>
         <material>
           <ambient>0.32 0.32 0.30 1</ambient>
           <diffuse>0.80 0.80 0.76 1</diffuse>
@@ -2269,6 +2421,7 @@
             <uri>../models/hand/right/meshes/thumb5_2.stl</uri>
           </mesh>
         </geometry>
+        <cast_shadows>false</cast_shadows>
         <material>
           <ambient>0.32 0.32 0.30 1</ambient>
           <diffuse>0.80 0.80 0.76 1</diffuse>
@@ -2329,6 +2482,7 @@
             <uri>../models/hand/right/meshes/thumb5_3.stl</uri>
           </mesh>
         </geometry>
+        <cast_shadows>false</cast_shadows>
         <material>
           <ambient>0.32 0.32 0.30 1</ambient>
           <diffuse>0.80 0.80 0.76 1</diffuse>

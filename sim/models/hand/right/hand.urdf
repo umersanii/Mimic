@@ -380,7 +380,7 @@
     <origin xyz="0.000000 0.029000 -0.057700" rpy="0.100000 0.000000 0.000000" />
     <parent link="hand_link" />
     <child link="thumb1_link" />
-    <axis xyz="0.000000 0.000000 1.000000" />
+    <axis xyz="0.000000 0.000000 -1.000000" />
     <limit lower="0.000000" upper="1.570800" effort="2.000000" velocity="0.785400" />
   </joint>
 
@@ -458,7 +458,7 @@
     <origin xyz="0.000000 -0.007050 -0.079400" rpy="0.700000 0.000000 0.000000" />
     <parent link="hand_link" />
     <child link="ring1_link" />
-    <axis xyz="0.000000 0.000000 1.000000" />
+    <axis xyz="0.000000 0.000000 -1.000000" />
     <limit lower="0.000000" upper="1.570800" effort="2.000000" velocity="0.785400" />
   </joint>
 
@@ -493,7 +493,7 @@
     <origin xyz="0.000000 -0.027000 -0.055500" rpy="0.700000 0.000000 0.000000" />
     <parent link="hand_link" />
     <child link="pinky1_link" />
-    <axis xyz="0.000000 0.000000 1.000000" />
+    <axis xyz="0.000000 0.000000 -1.000000" />
     <limit lower="0.000000" upper="1.570800" effort="2.000000" velocity="0.785400" />
   </joint>
 

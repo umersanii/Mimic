@@ -168,7 +168,7 @@ def finger_chain(side, flip):
     L("thumb2_link", "thumb5_2.stl", "mid")
     L("thumb3_link", "thumb5_3.stl", "distal")
     J("thumb1_joint", "hand_link", "thumb1_link",
-      (0.0, f * 0.029, -0.0577), (f * 0.1, 0.0, 0.0), (0.0, 0.0, 1.0))
+      (0.0, f * 0.029, -0.0577), (f * 0.1, 0.0, 0.0), (0.0, 0.0, -f))
     J("thumb_joint", "thumb1_link", "thumb2_link",
       (-0.00052, f * 0.02725, -0.013), (f * 0.825, -0.1, f * 0.3), (0.0, 1.0, 0.0),
       mimic=("thumb1_joint", 1.0))
@@ -208,7 +208,7 @@ def finger_chain(side, flip):
     L("ring3_link", "ring3_3.stl", "mid2")
     L("ring4_link", "ring3_4.stl", "distal")
     J("ring1_joint", "hand_link", "ring1_link",
-      (0.0, f * -0.00705, -0.0794), (f * 0.7, 0.0, 0.0), (0.0, 0.0, 1.0))
+      (0.0, f * -0.00705, -0.0794), (f * 0.7, 0.0, 0.0), (0.0, 0.0, -f))
     J("ring_joint", "ring1_link", "ring2_link",
       (0.00126, f * -0.0351, -0.0166), (f * -0.7775, 0.0, 0.0), (0.0, 1.0, 0.0),
       mimic=("ring1_joint", 1.0))
@@ -225,7 +225,7 @@ def finger_chain(side, flip):
     L("pinky3_link", "pinky3_3.stl", "mid2")
     L("pinky4_link", "pinky3_4.stl", "distal")
     J("pinky1_joint", "hand_link", "pinky1_link",
-      (0.0, f * -0.0270, -0.0555), (f * 0.7, 0.0, 0.0), (0.0, 0.0, 1.0))
+      (0.0, f * -0.0270, -0.0555), (f * 0.7, 0.0, 0.0), (0.0, 0.0, -f))
     J("pinky_joint", "pinky1_link", "pinky2_link",
       (0.0, f * -0.046, -0.0228), (f * -0.93, 0.0, 0.0), (0.0, 1.0, 0.0),
       mimic=("pinky1_joint", 1.0))
