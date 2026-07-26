@@ -44,6 +44,12 @@ MODEL_NAMES = {"L": "inmoov_left_hand", "R": "inmoov_right_hand"}
 
 JOINT_MAX_RAD = 1.5708  # matches the <limit upper=...> baked into hand.urdf
 
+# Below this, a frame-to-frame curl change is MediaPipe landmark noise passing through
+# hand_tracker.py's EMA, not real hand motion (see vision/analysis/signal_chain_walkthrough.ipynb,
+# "bonus experiment" cell) - resending it every frame drove the JointPositionController
+# continuously and showed up as visible jitter on a hand held still.
+DEADBAND = 0.01
+
 
 def main():
     node = Node()
@@ -54,6 +60,7 @@ def main():
         }
         for side, model in MODEL_NAMES.items()
     }
+    last_sent = {side: {finger: None for finger in FINGER_ORDER} for side in MODEL_NAMES}
 
     for line in sys.stdin:
         line = line.strip()
@@ -72,6 +79,10 @@ def main():
 
         for finger, curl in zip(FINGER_ORDER, values):
             curl = max(0.0, min(1.0, curl))
+            prev = last_sent[side][finger]
+            if prev is not None and abs(curl - prev) < DEADBAND:
+                continue
+            last_sent[side][finger] = curl
             msg = Double()
             msg.data = curl * JOINT_MAX_RAD
             publishers[side][finger].publish(msg)
