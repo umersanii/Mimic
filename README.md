@@ -52,6 +52,24 @@ python3 hand_tracker.py --no-serial
 This opens a webcam window with hand-skeleton overlay, finger count, and FPS (see
 [above](#see-it-in-action)), without needing the Arduino/servos connected.
 
+### Browser dashboard
+
+Add `--dashboard` to also serve a live browser view (video + HTML finger gauges) at
+`http://localhost:8765/`. This suppresses the local cv2 window by default (pass `--window` too to
+keep both):
+
+```fish
+python3 hand_tracker.py --no-serial --dashboard
+```
+
+**Combined vision + sim dashboard, one command:** with the [Gazebo simulation](#drive-the-simulated-hand-instead)
+set up, `./start_dashboard.sh` from the repo root starts (or reuses) the sim container, its camera
+bridge, and the vision dashboard together, then serves both the webcam and sim camera feeds side by
+side at `http://localhost:8765/`. Defaults to fully headless (no local X11/cv2 windows, browser
+only) — pass `--gui` to get the local gz sim window and the local cv2 window back. Extra args are
+passed through to `hand_tracker.py`, e.g. `./start_dashboard.sh --gazebo` to also drive the sim
+hand, or `./start_dashboard.sh --gui --gazebo` for both local windows plus sim driving.
+
 ### Model file
 
 `hand_tracker.py` uses MediaPipe's newer Tasks API (`mediapipe>=0.10.x` dropped the old
