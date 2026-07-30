@@ -1119,7 +1119,7 @@
       <parent>hand_link</parent>
       <child>thumb1_link</child>
       <axis>
-        <xyz>0 0 1</xyz>
+        <xyz>0.27058443 0.62657902 -0.7308781</xyz>
         <limit>
           <lower>0</lower>
           <upper>1.5708</upper>
@@ -2317,7 +2317,7 @@
       <parent>hand_link</parent>
       <child>thumb1_link</child>
       <axis>
-        <xyz>0 0 -1</xyz>
+        <xyz>-0.27058443 0.62657902 0.7308781</xyz>
         <limit>
           <lower>0</lower>
           <upper>1.5708</upper>

@@ -836,7 +836,7 @@
       <parent>hand_link</parent>
       <child>thumb1_link</child>
       <axis>
-        <xyz>0 0 1</xyz>
+        <xyz>0.27058399999999999 0.626579 -0.73087800000000003</xyz>
         <limit>
           <lower>0</lower>
           <upper>1.5708</upper>

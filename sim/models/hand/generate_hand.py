@@ -167,8 +167,29 @@ def finger_chain(side, flip):
     L("thumb1_link", f"{s}_thumb5_1.stl", "proximal")
     L("thumb2_link", "thumb5_2.stl", "mid")
     L("thumb3_link", "thumb5_3.stl", "distal")
+    # Axis is NOT a simple X/Y/Z: in the original inmoov_ros source xacro, thumb1_joint
+    # was never a driver at all - it was a passive mimic of thumb_joint (multiplier
+    # flip*0.75), with its own axis (0,0,1) authored only for that small secondary
+    # coupling. The real flexion motion lived on thumb_joint (axis (0,1,0)), one joint
+    # further down the chain, in a much more heavily-tilted frame (rpy 0.825,-0.1,0.3
+    # vs thumb1_joint's own 0.1,0,0). Promoting thumb1_joint to driver (required by
+    # bullet-featherstone - see the module comment above) is harmless for index/middle/
+    # ring/pinky, whose proximal joint's own axis already matches their real driver's
+    # axis/plane. It is NOT harmless for the thumb: thumb1_joint's native axis is a
+    # different rotation plane entirely from thumb_joint's, so driving it directly
+    # produces some other motion (spin/sideways sweep depending on axis choice tried),
+    # never the real curl - confirmed by testing plain X/Y/Z guesses on thumb1_joint,
+    # all wrong in different ways.
+    # Fix: re-express thumb_joint's own axis (0,1,0), rotated by thumb_joint's own rpy
+    # (flip*0.825, -0.1, flip*0.3), one frame up into thumb1_joint's frame - thumb1_joint's
+    # own rpy cancels out of this since we're solving for "same axis, one joint up the
+    # chain," not "same axis in hand_link's frame." R = Rz(yaw)*Ry(pitch)*Rx(roll) applied
+    # to (0,1,0), computed with numpy, gives (-0.27058443*f, 0.62657902, 0.7308781*f) -
+    # confirmed correct by direct gz topic pub testing (curls into the palm, not a spin
+    # or sideways sweep).
     J("thumb1_joint", "hand_link", "thumb1_link",
-      (0.0, f * 0.029, -0.0577), (f * 0.1, 0.0, 0.0), (0.0, 0.0, -f))
+      (0.0, f * 0.029, -0.0577), (f * 0.1, 0.0, 0.0),
+      (-0.27058443 * f, 0.62657902, 0.7308781 * f))
     J("thumb_joint", "thumb1_link", "thumb2_link",
       (-0.00052, f * 0.02725, -0.013), (f * 0.825, -0.1, f * 0.3), (0.0, 1.0, 0.0),
       mimic=("thumb1_joint", 1.0))

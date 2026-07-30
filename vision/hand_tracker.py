@@ -116,15 +116,27 @@ class HandDetector:
         return sum(1 for a in angles.values() if a > threshold)
 
 
-def curl_fraction(angle, straight=170, curled=40):
+# Per-finger (straight_deg, curled_deg) overrides, measured with --log-finger against a
+# real hand - see saniverse notes. Only fill in a finger here once it's actually been
+# measured; anything absent falls back to curl_fraction's generic defaults (170/40),
+# which were only ever fit to the default finger geometry, not verified per finger.
+FINGER_CALIBRATION = {
+    "thumb": (180.0, 108.6),
+    "index": (178.9, 0.7),
+}
+
+
+def curl_fraction(angle, finger=None, straight=170, curled=40):
     """0.0 = fully curled, 1.0 = fully straight."""
+    if finger in FINGER_CALIBRATION:
+        straight, curled = FINGER_CALIBRATION[finger]
     t = (angle - curled) / (straight - curled)
     return float(np.clip(t, 0.0, 1.0))
 
 
-def angle_to_servo(angle, servo_open=180, servo_closed=0):
+def angle_to_servo(angle, finger=None, servo_open=180, servo_closed=0):
     """Map a measured joint angle to a servo command (0-180)."""
-    t = curl_fraction(angle)
+    t = curl_fraction(angle, finger=finger)
     return int(servo_closed + t * (servo_open - servo_closed))
 
 
@@ -166,6 +178,11 @@ def main():
                               "higher = snappier/jitterier. Raw MediaPipe landmarks jitter a bit even "
                               "for a held-still hand; this filters that out before anything is sent "
                               "downstream (serial or Gazebo).")
+    parser.add_argument("--log-finger", choices=FINGER_ORDER, default=None,
+                         help="Print each frame's raw angle (degrees, pre-remap) for one finger, "
+                              "plus the running min/max seen so far. Move that finger through its "
+                              "full range of motion and read off the printed min/max to calibrate "
+                              "curl_fraction's straight/curled constants for it.")
     args = parser.parse_args()
 
     ser = None if args.no_serial else open_serial(args.port, args.baud)
@@ -183,6 +200,8 @@ def main():
     # the Gazebo bridge holds that hand's last-known pose instead of snapping it
     # to a default when tracking drops - a mid-frame reset looks like a glitch.
     smoothed_angles = {}
+    # {label: (min_angle, max_angle)} seen so far - only populated when --log-finger is set.
+    log_finger_range = {}
 
     while True:
         ok, frame = cap.read()
@@ -191,6 +210,14 @@ def main():
         frame = cv2.flip(frame, 1)
         frame = detector.find_hands(frame)
         angles_by_hand = detector.get_angles(frame.shape)
+
+        if args.log_finger:
+            for label, angles in angles_by_hand.items():
+                a = angles[args.log_finger]
+                lo, hi = log_finger_range.get(label, (a, a))
+                lo, hi = min(lo, a), max(hi, a)
+                log_finger_range[label] = (lo, hi)
+                print(f"[{label} {args.log_finger}] angle={a:6.1f}  min={lo:6.1f}  max={hi:6.1f}")
 
         for label, angles in angles_by_hand.items():
             if label not in smoothed_angles:
@@ -207,7 +234,7 @@ def main():
         fps_smoothed = fps if fps_smoothed == 0.0 else fps_smoothed * 0.9 + fps * 0.1
 
         curls_by_hand = {
-            label: {f: 1.0 - curl_fraction(a[f]) for f in FINGER_ORDER}
+            label: {f: 1.0 - curl_fraction(a[f], finger=f) for f in FINGER_ORDER}
             for label, a in smoothed_angles.items()
         }
         counts_by_hand = {
@@ -219,7 +246,7 @@ def main():
         # behavior from before dual-hand tracking existed.
         primary_label = next(iter(detector.hands), None)
         if primary_label is not None and ser is not None:
-            servo_cmds = [angle_to_servo(smoothed_angles[primary_label][f]) for f in FINGER_ORDER]
+            servo_cmds = [angle_to_servo(smoothed_angles[primary_label][f], finger=f) for f in FINGER_ORDER]
             try:
                 line = ",".join(str(v) for v in servo_cmds) + "\n"
                 ser.write(line.encode("ascii"))
