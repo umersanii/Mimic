@@ -23,6 +23,6 @@ sim/**/*.log
 
 # Claude Code local state (settings, scheduled-task locks, etc.)
 .claude/
-Claude.md
+CLAUDE.md
 firmware/*
 hardware/
