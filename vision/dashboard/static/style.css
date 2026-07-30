@@ -1,0 +1,195 @@
+/* Palette mirrors vision/hud.py's OpenCV HUD so the web dashboard matches the local window. */
+:root {
+  --panel-bg: #1e293b;
+  --panel-bg-deep: #0f172a;
+  --text: #f8fafc;
+  --text-muted: #94867a;
+  --green: #22c55e;
+  --red: #ef4444;
+  --amber: #f59e0b;
+  --track-bg: #334155;
+
+  --thumb: #38bdf8;
+  --index: #22c55e;
+  --middle: #facc15;
+  --ring: #f472b6;
+  --pinky: #a78bfa;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--panel-bg-deep);
+  color: var(--text);
+  font-family: "Segoe UI", system-ui, sans-serif;
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 20px;
+  background: var(--panel-bg);
+  border-bottom: 1px solid var(--panel-bg-deep);
+}
+
+.topbar h1 {
+  font-size: 16px;
+  letter-spacing: 0.06em;
+  margin: 0;
+}
+
+.pills {
+  display: flex;
+  gap: 10px;
+}
+
+.pill {
+  font-size: 12px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: var(--panel-bg-deep);
+  color: var(--text-muted);
+}
+
+.pill.ok { color: var(--green); }
+.pill.bad { color: var(--red); }
+.pill.warn { color: var(--amber); }
+
+main {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.video-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+@media (max-width: 800px) {
+  .video-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+.video-wrap {
+  position: relative;
+  background: #000;
+  border-radius: 8px;
+  overflow: hidden;
+  line-height: 0;
+  aspect-ratio: 4 / 3;
+}
+
+.video-wrap img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.video-wrap.offline img {
+  opacity: 0.25;
+}
+
+.video-label {
+  position: absolute;
+  top: 8px;
+  left: 10px;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  background: rgba(15, 23, 42, 0.6);
+  padding: 4px 8px;
+  border-radius: 4px;
+  z-index: 1;
+}
+
+.video-wrap.offline::after {
+  content: "NO SIGNAL";
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  font-size: 13px;
+  letter-spacing: 0.06em;
+}
+
+.hands {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.hand-panel {
+  background: var(--panel-bg);
+  border-radius: 8px;
+  padding: 14px 16px;
+}
+
+.hand-panel.not-tracked {
+  opacity: 0.55;
+}
+
+.hand-panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.hand-tag {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.hand-count {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.gauges {
+  display: flex;
+  gap: 10px;
+}
+
+.gauge {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.gauge-track {
+  width: 100%;
+  height: 70px;
+  background: var(--track-bg);
+  border-radius: 4px;
+  display: flex;
+  align-items: flex-end;
+  overflow: hidden;
+}
+
+.gauge-fill {
+  width: 100%;
+  height: 0%;
+  transition: height 80ms linear;
+}
+
+.gauge-label {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.gauge[data-finger="thumb"] .gauge-fill { background: var(--thumb); }
+.gauge[data-finger="index"] .gauge-fill { background: var(--index); }
+.gauge[data-finger="middle"] .gauge-fill { background: var(--middle); }
+.gauge[data-finger="ring"] .gauge-fill { background: var(--ring); }
+.gauge[data-finger="pinky"] .gauge-fill { background: var(--pinky); }

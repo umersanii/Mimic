@@ -182,6 +182,37 @@
       </link>
     </model>
 
+    <!-- Overview camera sensor: same pose as the <gui><camera> viewport above, so the
+         streamed feed (sim/bridge/gz_camera_dashboard.py -> web dashboard) matches what's
+         visible in the interactive GUI by default. A GUI <camera> is client-side-only and
+         publishes no gz-transport topic - this is a real sensor for that purpose. Static,
+         single link, no sensor-bearing joint tree needed (same bullet-featherstone
+         constraint noted on workbench/backdrop_wall above). -->
+    <model name="overview_camera">
+      <static>true</static>
+      <link name="link">
+        <pose>0 0.85 0.78 0 0.12 -1.5708</pose>
+        <sensor name="overview_camera_sensor" type="camera">
+          <always_on>true</always_on>
+          <update_rate>30</update_rate>
+          <visualize>false</visualize>
+          <topic>overview_camera/image</topic>
+          <camera>
+            <horizontal_fov>1.05</horizontal_fov>
+            <image>
+              <width>640</width>
+              <height>480</height>
+              <format>R8G8B8</format>
+            </image>
+            <clip>
+              <near>0.05</near>
+              <far>10</far>
+            </clip>
+          </camera>
+        </sensor>
+      </link>
+    </model>
+
     <model name='inmoov_left_hand'>
     <!-- Visually re-verified in the GUI: with roll=pi the forearm/hand assembly extends
          UPWARD from base_link's origin (fingers up), not down as the old single-hand

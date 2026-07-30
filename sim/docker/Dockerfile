@@ -40,4 +40,14 @@ RUN apt-get update && apt-get install -y \
 
 RUN echo "source /opt/ros/jazzy/setup.bash" >> /etc/bash.bashrc
 
+# For sim/bridge/gz_camera_dashboard.py - re-serves a gz-transport camera topic as a
+# WebSocket JPEG stream. Ubuntu 24.04's system pip blocks plain installs (PEP 668);
+# --break-system-packages matches this image's existing pattern of installing everything
+# system-wide rather than standing up a venv for one script. --ignore-installed avoids
+# pip trying (and failing) to uninstall apt/dpkg-managed packages like typing_extensions
+# that have no pip RECORD file.
+RUN apt-get update && apt-get install -y python3-pip \
+    && rm -rf /var/lib/apt/lists/* \
+    && pip install --break-system-packages --ignore-installed fastapi "uvicorn[standard]" pillow
+
 CMD ["gz", "sim"]

@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Mimic — Vision Dashboard</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <h1>ROBOTIC HAND CONTROL</h1>
+    <div class="pills">
+      <span id="fps-pill" class="pill">FPS —</span>
+      <span id="serial-pill" class="pill">NO SERIAL</span>
+      <span id="gazebo-pill" class="pill">NO GAZEBO</span>
+    </div>
+  </header>
+
+  <main>
+    <div class="video-row">
+      <div class="video-wrap">
+        <span class="video-label">WEBCAM</span>
+        <img id="video" alt="live camera feed" />
+      </div>
+      <div class="video-wrap">
+        <span class="video-label">SIMULATION</span>
+        <img id="sim-video" alt="simulated hand camera feed" />
+      </div>
+    </div>
+
+    <section class="hands">
+      <div class="hand-panel" data-hand="L">
+        <div class="hand-panel-head">
+          <span class="hand-tag">L</span>
+          <span class="hand-count">NOT TRACKED</span>
+        </div>
+        <div class="gauges"></div>
+      </div>
+      <div class="hand-panel" data-hand="R">
+        <div class="hand-panel-head">
+          <span class="hand-tag">R</span>
+          <span class="hand-count">NOT TRACKED</span>
+        </div>
+        <div class="gauges"></div>
+      </div>
+    </section>
+  </main>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

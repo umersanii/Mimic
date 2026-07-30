@@ -9,8 +9,10 @@ which requires the hand_landmarker.task model file in models/ - see README.md to
 """
 
 import argparse
+import base64
 import os
 import subprocess
+import threading
 import time
 
 import cv2
@@ -25,6 +27,7 @@ from mediapipe.tasks.python.vision import (
 )
 
 import hud
+from dashboard.server import DashboardHub, run_dashboard_server
 
 try:
     import serial
@@ -173,6 +176,14 @@ def main():
     parser.add_argument("--gazebo", action="store_true", help="Also drive the Gazebo sim hand")
     parser.add_argument("--gazebo-container", default="robotics_gazebo_sim",
                          help="Name of the running robotics-gazebo container (see sim/docker/run.sh)")
+    parser.add_argument("--dashboard", action="store_true",
+                         help="Also serve a browser dashboard (video + finger gauges) at "
+                              "http://localhost:<--dashboard-port>/. Suppresses the local cv2 "
+                              "window by default when set - pass --window to keep both.")
+    parser.add_argument("--dashboard-port", type=int, default=8765)
+    parser.add_argument("--window", action="store_true",
+                         help="Force-show the local cv2 window even with --dashboard set (it's "
+                              "shown by default without --dashboard, suppressed by default with it).")
     parser.add_argument("--smoothing", type=float, default=0.3,
                          help="EMA weight on each new curl reading, 0-1. Lower = smoother/laggier, "
                               "higher = snappier/jitterier. Raw MediaPipe landmarks jitter a bit even "
@@ -190,6 +201,17 @@ def main():
 
     gz_bridge = open_gazebo_bridge(args.gazebo_container) if args.gazebo else None
     gazebo_state = "disabled" if gz_bridge is None else "connected"
+
+    hub = None
+    if args.dashboard:
+        hub = DashboardHub()
+        threading.Thread(
+            target=run_dashboard_server, args=(hub,), kwargs={"port": args.dashboard_port},
+            daemon=True,
+        ).start()
+        print(f"[dashboard] serving on http://localhost:{args.dashboard_port}/")
+
+    show_window = args.window or not args.dashboard
 
     cap = cv2.VideoCapture(args.camera)
     detector = HandDetector()
@@ -264,16 +286,37 @@ def main():
             except (BrokenPipeError, OSError):
                 gazebo_state = "disconnected"
 
-        hud.draw_header(frame, fps_smoothed)
-        hud.draw_serial_status(frame, serial_state)
-        if gz_bridge is not None or args.gazebo:
-            hud.draw_gazebo_status(frame, gazebo_state)
-        hud.draw_finger_gauges(frame, curls_by_hand, FINGER_ORDER, counts_by_hand,
-                                visible_labels=detector.hands.keys())
-        cv2.imshow("Robotic Hand Control", frame)
+        if hub is not None:
+            visible_labels = detector.hands.keys()
+            ok_jpeg, jpeg = cv2.imencode(".jpg", frame, [cv2.IMWRITE_JPEG_QUALITY, 80])
+            if ok_jpeg:
+                image_b64 = base64.b64encode(jpeg).decode("ascii")
+                hub.publish({
+                    "image": f"data:image/jpeg;base64,{image_b64}",
+                    "fps": fps_smoothed,
+                    "serial": serial_state,
+                    "gazebo": gazebo_state if (gz_bridge is not None or args.gazebo) else "disabled",
+                    "hands": {
+                        label: {
+                            "tracked": label in visible_labels,
+                            "count": counts_by_hand.get(label, 0),
+                            "curls": curls_by_hand.get(label, {}),
+                        }
+                        for label in ("L", "R")
+                    },
+                })
 
-        if cv2.waitKey(1) & 0xFF == ord("q"):
-            break
+        if show_window:
+            hud.draw_header(frame, fps_smoothed)
+            hud.draw_serial_status(frame, serial_state)
+            if gz_bridge is not None or args.gazebo:
+                hud.draw_gazebo_status(frame, gazebo_state)
+            hud.draw_finger_gauges(frame, curls_by_hand, FINGER_ORDER, counts_by_hand,
+                                    visible_labels=detector.hands.keys())
+            cv2.imshow("Robotic Hand Control", frame)
+
+            if cv2.waitKey(1) & 0xFF == ord("q"):
+                break
 
     cap.release()
     cv2.destroyAllWindows()
