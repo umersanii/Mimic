@@ -11,6 +11,7 @@ docker run --rm \
     -e DISPLAY=$DISPLAY \
     -e QT_SCALE_FACTOR=1.25 \
     -e NVIDIA_DRIVER_CAPABILITIES=all \
+    -e NVIDIA_VISIBLE_DEVICES=all \
     -v /tmp/.X11-unix:/tmp/.X11-unix \
     -v (dirname (status --current-filename))/..:/sim \
     -e GZ_SIM_RESOURCE_PATH=/sim/models \

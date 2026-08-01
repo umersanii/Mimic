@@ -51,9 +51,12 @@
       <diffuse>0.9 0.88 0.85 1</diffuse>
     </light>
 
-    <!-- Fill lights: two dim point lights front-left/front-right of the bench, workshop
-         "softbox" placement so the hand meshes don't read as flat/silhouetted from the
-         single overhead sun. Kept low intensity so the sun remains the dominant/key light. -->
+    <!-- Fill lights: dim point lights on both the front (+y) and back (-y) sides of the
+         bench, workshop "softbox" placement so the hand meshes don't read as flat/
+         silhouetted from the single overhead sun. Kept low intensity so the sun remains
+         the dominant/key light. Back-side pair added alongside the back_* cameras below,
+         mirroring the front pair, so the back view isn't noticeably darker/flatter than
+         the front view. -->
     <light type="point" name="fill_light_left">
       <cast_shadows>false</cast_shadows>
       <pose>-0.6 0.6 1.1 0 0 0</pose>
@@ -68,6 +71,28 @@
     <light type="point" name="fill_light_right">
       <cast_shadows>false</cast_shadows>
       <pose>0.6 0.6 1.1 0 0 0</pose>
+      <diffuse>0.5 0.48 0.45 1</diffuse>
+      <attenuation>
+        <range>5</range>
+        <constant>0.4</constant>
+        <linear>0.3</linear>
+        <quadratic>0.05</quadratic>
+      </attenuation>
+    </light>
+    <light type="point" name="fill_light_back_left">
+      <cast_shadows>false</cast_shadows>
+      <pose>-0.6 -0.6 1.1 0 0 0</pose>
+      <diffuse>0.5 0.48 0.45 1</diffuse>
+      <attenuation>
+        <range>5</range>
+        <constant>0.4</constant>
+        <linear>0.3</linear>
+        <quadratic>0.05</quadratic>
+      </attenuation>
+    </light>
+    <light type="point" name="fill_light_back_right">
+      <cast_shadows>false</cast_shadows>
+      <pose>0.6 -0.6 1.1 0 0 0</pose>
       <diffuse>0.5 0.48 0.45 1</diffuse>
       <attenuation>
         <range>5</range>
@@ -159,16 +184,41 @@
       </link>
     </model>
 
-    <!-- Backdrop wall behind the bench (photo-booth style: floor + bench + wall), charcoal
-         workshop tone so screenshots/video don't trail off into the bare ground plane.
-         Placed at -y: the existing overview <gui><camera> sits at (0.5, 0.5, 1.3) looking
-         toward the origin (yaw -2.35 rad), so the open/front side is +x/+y and "behind"
-         the hands from that view is -y - a wall on the +y side would sit between the
-         camera and the hands and block the shot. -->
+    <!-- Backdrop walls, charcoal workshop tone so screenshots/video don't trail off into
+         the bare ground plane (photo-booth style). Originally a single wall at y=-0.45
+         behind the bench, when only the front (+y) side had cameras. Once back_* cameras
+         were added on the -y side (issue #7 follow-up: front/back per-hand views, palm
+         vs. dorsal - confirmed which is which by commanding a finger curl and watching
+         which way it folds relative to the front cameras, since the meshes have no
+         texture/creases to tell by eye), BOTH +y and -y became "open" camera sides, each
+         needing its own far wall as backdrop - one wall can only ever be behind one of
+         them. backdrop_wall (unmoved role, now further out at y=-1.3 so it clears the new
+         back_* camera positions at y=-0.55..-0.85 - at the old -0.45 it would sit between
+         those cameras and the hands) backs the FRONT (+y-side) cameras, which look toward
+         -y. backdrop_wall_back, symmetric at y=+1.3, backs the BACK (-y-side) cameras,
+         which look toward +y. Neither wall sits in the other's camera's field of view -
+         each is positioned behind its own side's cameras, not in front of them. -->
     <model name="backdrop_wall">
       <static>true</static>
       <link name="link">
-        <pose>0 -0.45 0.75 0 0 0</pose>
+        <pose>0 -1.3 0.75 0 0 0</pose>
+        <collision name="collision">
+          <geometry><box><size>1.6 0.05 1.5</size></box></geometry>
+        </collision>
+        <visual name="visual">
+          <geometry><box><size>1.6 0.05 1.5</size></box></geometry>
+          <material>
+            <ambient>0.16 0.16 0.17 1</ambient>
+            <diffuse>0.19 0.19 0.2 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <model name="backdrop_wall_back">
+      <static>true</static>
+      <link name="link">
+        <pose>0 1.3 0.75 0 0 0</pose>
         <collision name="collision">
           <geometry><box><size>1.6 0.05 1.5</size></box></geometry>
         </collision>
@@ -197,6 +247,140 @@
           <update_rate>30</update_rate>
           <visualize>false</visualize>
           <topic>overview_camera/image</topic>
+          <camera>
+            <horizontal_fov>1.05</horizontal_fov>
+            <image>
+              <width>640</width>
+              <height>480</height>
+              <format>R8G8B8</format>
+            </image>
+            <clip>
+              <near>0.05</near>
+              <far>10</far>
+            </clip>
+          </camera>
+        </sensor>
+      </link>
+    </model>
+
+    <!-- Per-hand cameras: same static single-link sensor pattern as overview_camera,
+         but framed tighter and centered on each hand's own mount x (-0.2 / +0.2) instead
+         of the midpoint - narrower horizontal_fov and closer y so the hand fills more of
+         the frame. Issue #7: per-hand views added first, per-finger close-ups deferred. -->
+    <model name="left_hand_camera">
+      <static>true</static>
+      <link name="link">
+        <pose>-0.2 0.78 0.75 0 0.12 -1.5708</pose>
+        <sensor name="left_hand_camera_sensor" type="camera">
+          <always_on>true</always_on>
+          <update_rate>30</update_rate>
+          <visualize>false</visualize>
+          <topic>left_hand_camera/image</topic>
+          <camera>
+            <horizontal_fov>1.05</horizontal_fov>
+            <image>
+              <width>640</width>
+              <height>480</height>
+              <format>R8G8B8</format>
+            </image>
+            <clip>
+              <near>0.05</near>
+              <far>10</far>
+            </clip>
+          </camera>
+        </sensor>
+      </link>
+    </model>
+
+    <model name="right_hand_camera">
+      <static>true</static>
+      <link name="link">
+        <pose>0.2 0.78 0.75 0 0.12 -1.5708</pose>
+        <sensor name="right_hand_camera_sensor" type="camera">
+          <always_on>true</always_on>
+          <update_rate>30</update_rate>
+          <visualize>false</visualize>
+          <topic>right_hand_camera/image</topic>
+          <camera>
+            <horizontal_fov>1.05</horizontal_fov>
+            <image>
+              <width>640</width>
+              <height>480</height>
+              <format>R8G8B8</format>
+            </image>
+            <clip>
+              <near>0.05</near>
+              <far>10</far>
+            </clip>
+          </camera>
+        </sensor>
+      </link>
+    </model>
+
+    <!-- BACK cameras: exact mirror of overview_camera/left_hand_camera/right_hand_camera
+         across the y=0 plane (y negated, yaw negated: -1.5708 -> 1.5708, so each still
+         looks back toward the hands from its own side) - x/z/pitch/fov all unchanged.
+         Confirmed by the finger-curl test above that the FRONT (+y) cameras see the palm,
+         so these see the back/dorsal side. -->
+    <model name="back_overview_camera">
+      <static>true</static>
+      <link name="link">
+        <pose>0 -0.85 0.78 0 0.12 1.5708</pose>
+        <sensor name="back_overview_camera_sensor" type="camera">
+          <always_on>true</always_on>
+          <update_rate>30</update_rate>
+          <visualize>false</visualize>
+          <topic>back_overview_camera/image</topic>
+          <camera>
+            <horizontal_fov>1.05</horizontal_fov>
+            <image>
+              <width>640</width>
+              <height>480</height>
+              <format>R8G8B8</format>
+            </image>
+            <clip>
+              <near>0.05</near>
+              <far>10</far>
+            </clip>
+          </camera>
+        </sensor>
+      </link>
+    </model>
+
+    <model name="back_left_hand_camera">
+      <static>true</static>
+      <link name="link">
+        <pose>-0.2 -0.78 0.75 0 0.12 1.5708</pose>
+        <sensor name="back_left_hand_camera_sensor" type="camera">
+          <always_on>true</always_on>
+          <update_rate>30</update_rate>
+          <visualize>false</visualize>
+          <topic>back_left_hand_camera/image</topic>
+          <camera>
+            <horizontal_fov>1.05</horizontal_fov>
+            <image>
+              <width>640</width>
+              <height>480</height>
+              <format>R8G8B8</format>
+            </image>
+            <clip>
+              <near>0.05</near>
+              <far>10</far>
+            </clip>
+          </camera>
+        </sensor>
+      </link>
+    </model>
+
+    <model name="back_right_hand_camera">
+      <static>true</static>
+      <link name="link">
+        <pose>0.2 -0.78 0.75 0 0.12 1.5708</pose>
+        <sensor name="back_right_hand_camera_sensor" type="camera">
+          <always_on>true</always_on>
+          <update_rate>30</update_rate>
+          <visualize>false</visualize>
+          <topic>back_right_hand_camera/image</topic>
           <camera>
             <horizontal_fov>1.05</horizontal_fov>
             <image>

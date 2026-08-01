@@ -1,11 +1,15 @@
 """
 Runs INSIDE the robotics-gazebo container (needs gz.transport13/gz.msgs10, same as
-gz_hand_bridge.py). Subscribes to the overview_camera sensor's image topic (added to
-hand_world.sdf) and re-serves it as a WebSocket JPEG stream on the container's host
-network (--network=host, see sim/docker/run.sh).
+gz_hand_bridge.py). Subscribes to all six camera sensors' image topics in hand_world.sdf
+(overview/left_hand/right_hand, each with a front and a back variant - see the mirrored
+back_* camera models added alongside issue #7's front/back follow-up) and re-serves each
+as its own WebSocket JPEG stream on the container's host network (--network=host, see
+sim/docker/run.sh). One gz-transport subscription per camera, one CameraHub per camera -
+the browser picks which feed to watch via the URL path (/ws/<camera>/<side>), not a
+filter on a single shared stream.
 
 Unlike gz_hand_bridge.py this isn't piped from another process's stdin - it has no
-input, just a topic subscription - so it's launched standalone and detached, independent
+input, just topic subscriptions - so it's launched standalone and detached, independent
 of vision/hand_tracker.py's lifecycle:
 
     docker exec -d robotics_gazebo_sim python3 /sim/bridge/gz_camera_dashboard.py
@@ -17,7 +21,6 @@ own server" decision).
 """
 
 import asyncio
-import base64
 import io
 import threading
 
@@ -27,7 +30,16 @@ from gz.transport13 import Node
 from gz.msgs10.image_pb2 import Image
 from PIL import Image as PILImage
 
-TOPIC = "overview_camera/image"
+# (camera, side) -> gz-transport image topic. "camera" and "side" are exactly the path
+# segments used in /ws/<camera>/<side>.
+CAMERAS = {
+    ("overview", "front"): "overview_camera/image",
+    ("left", "front"): "left_hand_camera/image",
+    ("right", "front"): "right_hand_camera/image",
+    ("overview", "back"): "back_overview_camera/image",
+    ("left", "back"): "back_left_hand_camera/image",
+    ("right", "back"): "back_right_hand_camera/image",
+}
 PORT = 8766
 
 
@@ -53,6 +65,10 @@ class CameraHub:
         with self._lock:
             self._queues.discard(queue)
 
+    def has_subscribers(self):
+        with self._lock:
+            return bool(self._queues)
+
     def publish(self, payload):
         if self._loop is None:
             return
@@ -68,46 +84,74 @@ class CameraHub:
         queue.put_nowait(payload)
 
 
-hub = CameraHub()
+hubs = {key: CameraHub() for key in CAMERAS}
 app = FastAPI()
 
 
-def on_image(msg):
-    # <format>R8G8B8</format> in the sensor's SDF -> raw interleaved RGB bytes.
-    img = PILImage.frombytes("RGB", (msg.width, msg.height), msg.data)
-    buf = io.BytesIO()
-    img.save(buf, format="JPEG", quality=80)
-    image_b64 = base64.b64encode(buf.getvalue()).decode("ascii")
-    hub.publish({"image": f"data:image/jpeg;base64,{image_b64}"})
+def make_on_image(key):
+    hub = hubs[key]
+
+    def on_image(msg):
+        # Skip the decode/encode work entirely when nobody's watching this camera - all
+        # six sensors publish at 30Hz regardless of the browser's current selection (see
+        # CAMERAS above), and encoding all six every frame was starving whichever one
+        # was actually being viewed (GIL contention with gz-sim's own render/physics
+        # load in this same container). Only the encode is gated, not the gz-transport
+        # subscription itself - cheap to leave that open.
+        if not hub.has_subscribers():
+            return
+        # <format>R8G8B8</format> in the sensor's SDF -> raw interleaved RGB bytes.
+        img = PILImage.frombytes("RGB", (msg.width, msg.height), msg.data)
+        buf = io.BytesIO()
+        img.save(buf, format="JPEG", quality=80)
+        # Raw bytes over a binary WebSocket frame, not base64-in-JSON - skips both the
+        # base64 CPU pass and its ~33% size overhead.
+        hub.publish(buf.getvalue())
+
+    return on_image
 
 
 @app.on_event("startup")
-async def _bind_loop():
-    hub.bind_loop(asyncio.get_running_loop())
+async def _bind_loops():
+    loop = asyncio.get_running_loop()
+    for hub in hubs.values():
+        hub.bind_loop(loop)
 
 
 @app.get("/")
 async def health():
-    return {"status": "ok", "topic": TOPIC}
+    return {"status": "ok", "cameras": {f"{c}/{s}": t for (c, s), t in CAMERAS.items()}}
 
 
-@app.websocket("/ws")
-async def ws_endpoint(websocket: WebSocket):
+@app.websocket("/ws/{camera}/{side}")
+async def ws_endpoint(websocket: WebSocket, camera: str, side: str):
+    key = (camera, side)
+    if key not in hubs:
+        await websocket.close(code=1008)
+        return
     await websocket.accept()
-    queue = hub.connect()
+    queue = hubs[key].connect()
     try:
         while True:
             payload = await queue.get()
-            await websocket.send_json(payload)
+            await websocket.send_bytes(payload)
     except WebSocketDisconnect:
         pass
     finally:
-        hub.disconnect(queue)
+        hubs[key].disconnect(queue)
+
+
+# Bare /ws keeps the pre-switcher default (front overview) working for anything not yet
+# updated to the per-camera/per-side path.
+@app.websocket("/ws")
+async def ws_default(websocket: WebSocket):
+    await ws_endpoint(websocket, "overview", "front")
 
 
 def main():
     node = Node()
-    node.subscribe(Image, TOPIC, on_image)
+    for key, topic in CAMERAS.items():
+        node.subscribe(Image, topic, make_on_image(key))
     uvicorn.run(app, host="0.0.0.0", port=PORT, log_level="warning")
 
 

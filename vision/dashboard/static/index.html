@@ -2,27 +2,86 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Mimic — Vision Dashboard</title>
+  <link rel="icon" type="image/svg+xml" href="/static/favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;600;700&family=Fira+Code:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/static/style.css" />
 </head>
 <body>
   <header class="topbar">
-    <h1>ROBOTIC HAND CONTROL</h1>
+    <!-- Same mark as Mimic-docs: mkdocs-material's "hand-front-right-outline" icon,
+         used there as both the site logo and favicon (no literal .ico file - Material
+         renders it from an icon font/SVG set). Grabbed straight from the installed
+         mkdocs-material package rather than redrawn. -->
+    <div class="brand">
+      <svg class="brand-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.5 8c-.17 0-.34 0-.5.05V4.5A2.5 2.5 0 0 0 15.5 2c-.19 0-.37 0-.54.06A2.5 2.5 0 0 0 12.5 0c-1.06 0-1.96.66-2.33 1.59A2.5 2.5 0 0 0 7 4v.55c-.16-.05-.33-.05-.5-.05A2.5 2.5 0 0 0 4 7v8.5c0 4.69 3.81 8.5 8.5 8.5s8.5-3.81 8.5-8.5v-5A2.5 2.5 0 0 0 18.5 8m.5 7.5a6.5 6.5 0 1 1-13 0V7c0-.28.22-.5.5-.5s.5.22.5.5v5h2V4c0-.28.22-.5.5-.5s.5.22.5.5v7h2V2.5c0-.28.22-.5.5-.5s.5.22.5.5V11h2V4.5c0-.28.22-.5.5-.5s.5.22.5.5v8.92c-1.77.77-3 2.53-3 4.58h2c0-1.66 1.34-3 3-3v-4.5c0-.28.22-.5.5-.5s.5.22.5.5z"/></svg>
+      <div class="brand-text">
+        <span class="brand-title">MIMIC</span>
+        <h1>ROBOTIC HAND CONTROL</h1>
+      </div>
+    </div>
     <div class="pills">
       <span id="fps-pill" class="pill">FPS —</span>
       <span id="serial-pill" class="pill">NO SERIAL</span>
       <span id="gazebo-pill" class="pill">NO GAZEBO</span>
+      <button class="refresh-btn" id="sim-refresh-btn" title="Reconnect the sim camera WebSocket">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" /></svg>
+        REFRESH
+      </button>
     </div>
   </header>
 
   <main>
     <div class="video-row">
       <div class="video-wrap">
-        <span class="video-label">WEBCAM</span>
+        <span class="video-label">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5l4.72-4.72a.75.75 0 0 1 1.28.53v11.38a.75.75 0 0 1-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 0 0 2.25-2.25v-9a2.25 2.25 0 0 0-2.25-2.25h-9A2.25 2.25 0 0 0 2.25 7.5v9a2.25 2.25 0 0 0 2.25 2.25Z" /></svg>
+          WEBCAM
+        </span>
         <img id="video" alt="live camera feed" />
       </div>
       <div class="video-wrap">
-        <span class="video-label">SIMULATION</span>
+        <span class="video-label">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m21 7.5-9-5.25L3 7.5m18 0-9 5.25m9-5.25v9l-9 5.25M3 7.5l9 5.25M3 7.5v9l9 5.25m0-9v9" /></svg>
+          SIMULATION
+        </span>
+        <!-- Shared column wrapper: if camera-switcher wraps to a second line on a
+             narrow viewport, side-switcher flows below it naturally instead of the two
+             rows sitting at fixed top offsets and colliding. -->
+        <div class="sim-switchers">
+          <div class="camera-switcher" id="camera-switcher">
+            <button class="camera-btn active" data-camera="overview">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5l4.72-4.72a.75.75 0 0 1 1.28.53v11.38a.75.75 0 0 1-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 0 0 2.25-2.25v-9a2.25 2.25 0 0 0-2.25-2.25h-9A2.25 2.25 0 0 0 2.25 7.5v9a2.25 2.25 0 0 0 2.25 2.25Z" /></svg>
+              OVERVIEW
+            </button>
+            <button class="camera-btn" data-camera="left">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5l4.72-4.72a.75.75 0 0 1 1.28.53v11.38a.75.75 0 0 1-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 0 0 2.25-2.25v-9a2.25 2.25 0 0 0-2.25-2.25h-9A2.25 2.25 0 0 0 2.25 7.5v9a2.25 2.25 0 0 0 2.25 2.25Z" /></svg>
+              LEFT HAND
+            </button>
+            <button class="camera-btn" data-camera="right">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5l4.72-4.72a.75.75 0 0 1 1.28.53v11.38a.75.75 0 0 1-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 0 0 2.25-2.25v-9a2.25 2.25 0 0 0-2.25-2.25h-9A2.25 2.25 0 0 0 2.25 7.5v9a2.25 2.25 0 0 0 2.25 2.25Z" /></svg>
+              RIGHT HAND
+            </button>
+          </div>
+          <div class="side-switcher" id="side-switcher">
+            <!-- Labels swapped vs. the underlying "front"/"back" camera/topic names -
+                 visual inspection showed the side previously labeled FRONT is actually
+                 the back/dorsal view and vice versa. data-side (and therefore which
+                 gz-transport topic/WebSocket path gets requested) is unchanged - only
+                 the human-facing text+icon moved, so BACK here still requests side=front. -->
+            <button class="side-btn active" data-side="front">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" /></svg>
+              BACK
+            </button>
+            <button class="side-btn" data-side="back">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 15.75 7.5-7.5 7.5 7.5" /></svg>
+              FRONT
+            </button>
+          </div>
+        </div>
         <img id="sim-video" alt="simulated hand camera feed" />
       </div>
     </div>
@@ -41,6 +100,25 @@
           <span class="hand-count">NOT TRACKED</span>
         </div>
         <div class="gauges"></div>
+      </div>
+    </section>
+
+    <section class="camera-info-widget" id="camera-info-widget">
+      <div class="camera-info-head">SIM CAMERA</div>
+      <div class="camera-info-grid" id="camera-info-grid"></div>
+    </section>
+
+    <section class="finger-info-widget">
+      <div class="camera-info-head">PER-FINGER ANGLE &amp; POSE</div>
+      <div class="finger-info-row">
+        <div class="finger-info-col">
+          <div class="finger-info-col-head">L</div>
+          <table class="finger-table" id="finger-table-L"></table>
+        </div>
+        <div class="finger-info-col">
+          <div class="finger-info-col-head">R</div>
+          <table class="finger-table" id="finger-table-R"></table>
+        </div>
       </div>
     </section>
   </main>

@@ -1,71 +1,167 @@
-/* Palette mirrors vision/hud.py's OpenCV HUD so the web dashboard matches the local window. */
+/* Black background + grey widget cards. Structure/classes unchanged. Palette rule:
+   titles are white, descriptions/labels are a dimmer grey, and color is reserved for
+   actual information (live status, values, per-finger data) rather than used as
+   decoration. */
 :root {
-  --panel-bg: #1e293b;
-  --panel-bg-deep: #0f172a;
-  --text: #f8fafc;
-  --text-muted: #94867a;
-  --green: #22c55e;
-  --red: #ef4444;
+  --bg: #000000;
+  --panel-bg: #1a1a1a;
+  --panel-bg-deep: #000000;
+  --panel-raised: #262626;
+  --border: rgba(255, 255, 255, 0.08);
+  --border-strong: rgba(255, 255, 255, 0.2);
+
+  --title: #ffffff;
+  --text: #d4d4d4;
+  --text-muted: #8a8a8a;
+
+  --accent: #22d3ee;
   --amber: #f59e0b;
-  --track-bg: #334155;
+  --green: #34d399;
+  --red: #f87171;
 
   --thumb: #38bdf8;
-  --index: #22c55e;
+  --index: #34d399;
   --middle: #facc15;
   --ring: #f472b6;
   --pinky: #a78bfa;
+
+  --track-bg: rgba(255, 255, 255, 0.06);
+  /* JetBrains Mono for titles/labels-that-identify (real bold weights, good legibility
+     at small sizes - Share Tech Mono was dropped here, it only ships one thin weight
+     with no true bold, so it stayed hard to read even with font-weight:700 set); Fira
+     Code for everything else - status text, buttons, and especially numeric data, since
+     its tabular figures keep angle/pose columns aligned. */
+  --font-title: "JetBrains Mono", "SFMono-Regular", Menlo, monospace;
+  --font-mono: "Fira Code", "SFMono-Regular", Menlo, monospace;
 }
 
 * { box-sizing: border-box; }
 
 body {
   margin: 0;
-  background: var(--panel-bg-deep);
+  background: var(--bg);
   color: var(--text);
-  font-family: "Segoe UI", system-ui, sans-serif;
+  font-family: var(--font-mono);
+  font-weight: 500;
 }
 
 .topbar {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 20px;
+  gap: 8px;
+  padding: 14px 20px;
   background: var(--panel-bg);
-  border-bottom: 1px solid var(--panel-bg-deep);
+  border-bottom: 1px solid var(--border);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.brand-icon {
+  width: 26px;
+  height: 26px;
+  flex-shrink: 0;
+  color: var(--accent);
+}
+
+.brand-text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.brand-title {
+  font-family: var(--font-title);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  color: var(--accent);
 }
 
 .topbar h1 {
-  font-size: 16px;
-  letter-spacing: 0.06em;
+  font-family: var(--font-title);
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
   margin: 0;
+  color: var(--title);
 }
 
 .pills {
   display: flex;
+  flex-wrap: wrap;
+  align-items: center;
   gap: 10px;
 }
 
 .pill {
-  font-size: 12px;
-  padding: 6px 12px;
-  border-radius: 999px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  padding: 6px 12px 6px 10px;
+  border-radius: 4px;
   background: var(--panel-bg-deep);
+  border: 1px solid var(--border);
   color: var(--text-muted);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
 
-.pill.ok { color: var(--green); }
-.pill.bad { color: var(--red); }
-.pill.warn { color: var(--amber); }
+.pill::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  flex-shrink: 0;
+}
+
+/* Status colors carry real information (connection state) - the one place color is
+   load-bearing rather than decorative in the topbar. */
+.pill.ok {
+  color: var(--green);
+  border-color: rgba(52, 211, 153, 0.35);
+}
+
+.pill.ok::before {
+  animation: pulse-dot 1.8s ease-in-out infinite;
+}
+
+.pill.bad {
+  color: var(--red);
+  border-color: rgba(248, 113, 113, 0.35);
+}
+
+.pill.warn {
+  color: var(--amber);
+  border-color: rgba(245, 158, 11, 0.35);
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(52, 211, 153, 0.5); }
+  50% { opacity: 0.6; box-shadow: 0 0 0 4px rgba(52, 211, 153, 0); }
+}
 
 main {
   max-width: 1400px;
   margin: 0 auto;
-  padding: 20px;
+  padding: 24px 20px 40px;
 }
 
 .video-row {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  /* minmax(0, 1fr), not plain 1fr - a bare 1fr track has an implicit min-width:auto, so
+     it can't shrink below the camera-switcher button row's min-content width, which was
+     forcing this whole grid (and therefore the page) wider than the viewport instead of
+     letting the buttons wrap. */
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 16px;
 }
 
@@ -75,10 +171,52 @@ main {
   }
 }
 
-.video-wrap {
+/* Panel framing shared by every widget-like block: hairline border + two neutral corner
+   brackets (top-left / bottom-right) - decorative chrome, kept grey/white rather than
+   colored so color stays reserved for actual data. */
+.video-wrap,
+.hand-panel,
+.camera-info-widget,
+.finger-info-widget {
   position: relative;
+  border: 1px solid var(--border);
+}
+
+.video-wrap::before,
+.hand-panel::before,
+.camera-info-widget::before,
+.finger-info-widget::before {
+  content: "";
+  position: absolute;
+  top: -1px;
+  left: -1px;
+  width: 14px;
+  height: 14px;
+  border-top: 2px solid var(--border-strong);
+  border-left: 2px solid var(--border-strong);
+  pointer-events: none;
+  z-index: 2;
+}
+
+.video-wrap::after,
+.hand-panel::after,
+.camera-info-widget::after,
+.finger-info-widget::after {
+  content: "";
+  position: absolute;
+  bottom: -1px;
+  right: -1px;
+  width: 14px;
+  height: 14px;
+  border-bottom: 2px solid var(--border-strong);
+  border-right: 2px solid var(--border-strong);
+  pointer-events: none;
+  z-index: 2;
+}
+
+.video-wrap {
   background: #000;
-  border-radius: 8px;
+  border-radius: 4px;
   overflow: hidden;
   line-height: 0;
   aspect-ratio: 4 / 3;
@@ -92,20 +230,188 @@ main {
 }
 
 .video-wrap.offline img {
-  opacity: 0.25;
+  opacity: 0.2;
 }
 
 .video-label {
   position: absolute;
   top: 8px;
   left: 10px;
-  font-size: 11px;
-  letter-spacing: 0.06em;
-  color: var(--text-muted);
-  background: rgba(15, 23, 42, 0.6);
-  padding: 4px 8px;
-  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--font-title);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--title);
+  background: rgba(0, 0, 0, 0.72);
+  border: 1px solid rgba(52, 211, 153, 0.4);
+  padding: 5px 10px;
+  border-radius: 999px;
   z-index: 1;
+}
+
+/* Only the icon carries color (live-feed indicator), text stays white like every other
+   label - and it pulses, same "live" language as the topbar pill status dots. */
+.video-label svg {
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
+  color: var(--green);
+  animation: pulse-icon 1.8s ease-in-out infinite;
+}
+
+@keyframes pulse-icon {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+
+/* Switchers are overlaid directly on the SIMULATION video, top-right corner - dashboard
+   chrome on top of the feed, same as the WEBCAM/SIMULATION video-label. The wrapper is
+   what's positioned/anchored; camera-switcher and side-switcher are normal-flow children
+   inside it (column stack), so if camera-switcher wraps to a second line the side-
+   switcher row just flows below it instead of the two overlapping at fixed offsets. */
+.sim-switchers {
+  position: absolute;
+  top: 8px;
+  left: 10px;
+  right: 10px;
+  max-width: calc(100% - 20px);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  z-index: 1;
+}
+
+.camera-switcher,
+.side-switcher {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 4px;
+}
+
+.camera-btn,
+.side-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: var(--title);
+  background: rgba(0, 0, 0, 0.72);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 5px 10px;
+  cursor: pointer;
+  transition: color 150ms, border-color 150ms, background 150ms;
+}
+
+.camera-btn svg,
+.side-btn svg {
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
+}
+
+.camera-btn:hover,
+.side-btn:hover {
+  border-color: var(--border-strong);
+}
+
+/* Which camera/side is active is itself a piece of information - colored on purpose. */
+.camera-btn.active {
+  color: var(--title);
+  background: var(--amber);
+  border-color: var(--amber);
+}
+
+.side-btn.active {
+  color: var(--title);
+  background: var(--thumb);
+  border-color: var(--thumb);
+}
+
+/* Refresh button lives in the topbar next to the GAZEBO pill, not on the video itself -
+   it's a connection control for the sim link, same family as the status pills. */
+.refresh-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: var(--title);
+  background: var(--panel-bg-deep);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 6px 14px;
+  cursor: pointer;
+  transition: color 150ms, border-color 150ms;
+}
+
+.refresh-btn svg {
+  width: 13px;
+  height: 13px;
+  flex-shrink: 0;
+}
+
+.refresh-btn:hover {
+  color: var(--title);
+  border-color: var(--border-strong);
+}
+
+/* Dedicated pose/angle widget, filling the empty space below the hand panels instead of
+   being overlaid on the video or crammed into a toolbar strip. */
+.camera-info-widget {
+  margin-top: 16px;
+  background: var(--panel-bg);
+  border-radius: 4px;
+  padding: 16px 18px;
+}
+
+.camera-info-head {
+  font-family: var(--font-title);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--title);
+  margin-bottom: 12px;
+}
+
+.camera-info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
+}
+
+.camera-info-stat {
+  background: var(--panel-raised);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 10px 12px;
+}
+
+.camera-info-stat-label {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  margin-bottom: 5px;
+}
+
+/* The actual data - colored so it reads as live information against the grey card. */
+.camera-info-stat-value {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--title);
 }
 
 .video-wrap.offline::after {
@@ -116,25 +422,28 @@ main {
   align-items: center;
   justify-content: center;
   color: var(--text-muted);
-  font-size: 13px;
-  letter-spacing: 0.06em;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  z-index: 0;
 }
 
 .hands {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 16px;
   margin-top: 16px;
 }
 
 .hand-panel {
   background: var(--panel-bg);
-  border-radius: 8px;
+  border-radius: 4px;
   padding: 14px 16px;
+  transition: opacity 200ms;
 }
 
 .hand-panel.not-tracked {
-  opacity: 0.55;
+  opacity: 0.45;
 }
 
 .hand-panel-head {
@@ -145,12 +454,17 @@ main {
 }
 
 .hand-tag {
-  font-weight: 600;
-  font-size: 14px;
+  font-family: var(--font-title);
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.06em;
+  color: var(--title);
 }
 
 .hand-count {
-  font-size: 12px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
   color: var(--text-muted);
 }
 
@@ -171,7 +485,8 @@ main {
   width: 100%;
   height: 70px;
   background: var(--track-bg);
-  border-radius: 4px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
   display: flex;
   align-items: flex-end;
   overflow: hidden;
@@ -184,12 +499,112 @@ main {
 }
 
 .gauge-label {
-  font-size: 11px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.05em;
   color: var(--text-muted);
 }
 
+/* Per-finger curl amount is live information - each finger keeps its own color so the
+   gauges, and the matching finger-table rows below, read as one consistent system. */
 .gauge[data-finger="thumb"] .gauge-fill { background: var(--thumb); }
 .gauge[data-finger="index"] .gauge-fill { background: var(--index); }
 .gauge[data-finger="middle"] .gauge-fill { background: var(--middle); }
 .gauge[data-finger="ring"] .gauge-fill { background: var(--ring); }
 .gauge[data-finger="pinky"] .gauge-fill { background: var(--pinky); }
+
+.finger-info-widget {
+  margin-top: 16px;
+  background: var(--panel-bg);
+  border-radius: 4px;
+  padding: 16px 18px;
+}
+
+.finger-info-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 16px;
+}
+
+/* Vertical rule between the L and R columns - without it the two tables just read as one
+   continuous block since they share the same background. */
+.finger-info-col + .finger-info-col {
+  border-left: 1px solid var(--border);
+  padding-left: 16px;
+}
+
+@media (max-width: 800px) {
+  .finger-info-row {
+    grid-template-columns: 1fr;
+  }
+
+  .finger-info-col + .finger-info-col {
+    border-left: none;
+    border-top: 1px solid var(--border);
+    padding-left: 0;
+    padding-top: 16px;
+  }
+}
+
+.finger-info-col-head {
+  font-family: var(--font-title);
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.06em;
+  color: var(--title);
+  margin-bottom: 8px;
+}
+
+.finger-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+.finger-table th {
+  text-align: left;
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  padding: 4px 8px;
+  font-weight: 400;
+  border-bottom: 1px solid var(--border);
+}
+
+.finger-table td {
+  padding: 5px 8px;
+  border-top: 1px solid var(--border);
+  color: var(--text);
+  white-space: nowrap;
+}
+
+.finger-table td.finger-name {
+  font-family: var(--font-title);
+  font-weight: 700;
+  color: var(--title);
+}
+
+/* Live curl/angle values colored per finger, matching the gauge above - the one place in
+   this table that's actually changing in real time. */
+.finger-table tr[data-finger="thumb"] .finger-curl,
+.finger-table tr[data-finger="thumb"] .finger-angle { color: var(--thumb); }
+.finger-table tr[data-finger="index"] .finger-curl,
+.finger-table tr[data-finger="index"] .finger-angle { color: var(--index); }
+.finger-table tr[data-finger="middle"] .finger-curl,
+.finger-table tr[data-finger="middle"] .finger-angle { color: var(--middle); }
+.finger-table tr[data-finger="ring"] .finger-curl,
+.finger-table tr[data-finger="ring"] .finger-angle { color: var(--ring); }
+.finger-table tr[data-finger="pinky"] .finger-curl,
+.finger-table tr[data-finger="pinky"] .finger-angle { color: var(--pinky); }
+
+/* When a hand isn't currently tracked, its finger values fall back to "-" - dim them to
+   muted grey instead of leaving the bright per-finger color on a placeholder, and dim
+   the row label too. The attribute selector on the override matches the specificity of
+   the colored rules above so this wins without !important. */
+.finger-table.not-tracked tr[data-finger] .finger-curl,
+.finger-table.not-tracked tr[data-finger] .finger-angle,
+.finger-table.not-tracked td.finger-name {
+  color: var(--text-muted);
+}
